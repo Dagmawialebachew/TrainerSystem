@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block form_title %}Edit Meal Plan{% endblock %}
+
+{% block content %}
+<form id="meal-plan-form" method="post" enctype="multipart/form-data" autocomplete="on">
+    {% csrf_token %}
+    <input type="hidden" name="meal_structure_json" id="meal_structure_json">
+
+    <div class="max-w-2xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
+        <!-- Back Button -->
+        <div>
+            <a href="{% url 'nutrition:list' %}" 
+               class="text-accent-500 font-medium hover:text-accent-700 flex items-center space-x-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
+        </div>
+
+  
+
+
+    <!-- Tabs Navigation -->
+     <div class="overflow-x-auto">
+
+         <div class="flex min-w-max gap-2 mb-4">
+             <button type="button" class="tab-btn bg-primary-50 px-4 py-2 rounded-lg font-semibold text-primary-800" data-tab="basic">Basic Info</button>
+             <button type="button" class="tab-btn bg-primary-50 px-4 py-2 rounded-lg font-semibold text-primary-800" data-tab="meals">Daily Targets</button>
+             <button type="button" class="tab-btn bg-primary-50 px-4 py-2 rounded-lg font-semibold text-primary-800" data-tab="nutrition-targets">Nutrition Targets</button>
+             <button type="button" class="tab-btn bg-primary-50 px-4 py-2 rounded-lg font-semibold text-primary-800" data-tab="notes">Additional Notes</button>
+         </div>
+     </div>
+
+    <!-- Notes Tab -->
+    <div id="notes" class="tab-content hidden space-y-4">
+        {% for field in form %}
+        {% if field.name == 'fasting_considerations' %}
+        <div class="flex flex-col">
+            <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+            {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+            {% if field.errors %}
+            <p class="text-sm text-warning-700 mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="text-sm text-primary-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Basic Info Tab -->
+    <div id="basic" class="tab-content space-y-4">
+        {% for field in form %}
+        {% if field.name in "client,title,description,meal_type,start_date,includes_traditional_food" %}
+        <div class="flex flex-col">
+            <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+            {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+            {% if field.errors %}
+            <p class="text-sm text-warning-700 mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="text-sm text-primary-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Nutrition Targets Tab -->
+    <div id="nutrition-targets" class="tab-content hidden space-y-4">
+        {% for field in form %}
+        {% if field.name in "carbs_grams,protein_grams,fat_grams,daily_calories" %}
+        <div class="flex flex-col">
+            <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+            {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+            {% if field.errors %}
+            <p class="text-sm text-warning-700 mt-1">{{ field.errors|join:", " }}</p>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="text-sm text-primary-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+<!-- Meals Tab -->
+<div id="meals" class="tab-content hidden space-y-6">
+    {% for day_block in structured_meals %}
+    <div class="day-section border rounded-xl shadow-sm overflow-hidden">
+        <!-- Collapsible Day Header -->
+        <button type="button" class="day-toggle w-full px-4 py-3 bg-primary-50 text-left font-semibold text-primary-800 flex justify-between items-center">
+            <span>{{ day_block.day }}</span>
+            <i class="fas fa-chevron-down transition-transform"></i>
+        </button>
+
+        <!-- Day Content -->
+        <div class="day-content hidden px-4 py-3 space-y-4 bg-white">
+            {% for meal_block in day_block.meals %}
+            <div class="meal-section border border-primary-200 rounded-lg p-3">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium text-primary-900">{{ meal_block.meal }}</span>
+                    <button type="button" class="add-food-btn text-sm text-primary-600 px-3 py-1 rounded-lg border border-primary-300 hover:bg-primary-50 transition">+ Add Food</button>
+                </div>
+
+                <div class="foods-list mt-3 space-y-2">
+                    {% if meal_block.items %}
+                        {% for item in meal_block.items %}
+                        <div class="food-item flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <input type="text" class="food-search w-full px-3 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:outline-none" value="{{ item.name }}">
+                            </div>
+                            <input type="number" class="food-qty w-20 px-2 py-1 border border-primary-300 rounded-lg" value="{{ item.qty }}"> g
+                            <button type="button" class="remove-food-btn text-red-600 hover:text-red-800 px-2 py-1">✕</button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <!-- Empty Template for Adding -->
+                    <div class="food-item flex gap-2 items-center hidden template">
+                        <div class="relative flex-1">
+                            <input type="text" class="food-search w-full px-3 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400 focus:outline-none" placeholder="Search or add food...">
+                        </div>
+                        <input type="number" class="food-qty w-20 px-2 py-1 border border-primary-300 rounded-lg" value="100"> g
+                        <button type="button" class="remove-food-btn text-red-600 hover:text-red-800 px-2 py-1">✕</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+  <div class="mt-6">
+            <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium shadow hover:opacity-90 transition">Update Plan</button>
+        </div>
+    </div>
+
+</form>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Tabs
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.tab;
+            tabContents.forEach(tc => tc.classList.add('hidden'));
+            document.getElementById(target).classList.remove('hidden');
+            tabButtons.forEach(b => b.classList.remove('bg-primary-100', 'bg-primary-400','text-white'));
+            tabButtons.forEach(b => b.classList.add('text-primary-600'));
+
+            btn.classList.add('bg-primary-400','text-white');
+            btn.classList.remove('text-primary-600', 'bg-primary-300');
+        });
+    });
+
+    // Collect Meal Structure
+    function collectMealStructure() {
+        const data = {};
+        document.querySelectorAll('.day-section').forEach(dayEl => {
+            const day = dayEl.querySelector('.day-toggle span').innerText;
+            data[day] = {};
+            dayEl.querySelectorAll('.meal-section').forEach(mealEl => {
+                const mealName = mealEl.querySelector('span').innerText;
+                const foods = [];
+                mealEl.querySelectorAll('.food-item:not(.template)').forEach(foodEl => {
+                    const name = foodEl.querySelector('.food-search').value.trim();
+                    const qty = foodEl.querySelector('.food-qty').value;
+                    if (name) foods.push({ name, qty });
+                });
+                data[day][mealName] = foods;
+            });
+        });
+        return data;
+    }
+
+    // Form Submission
+    const form = document.getElementById('meal-plan-form');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const mealStructureInput = document.getElementById('meal_structure_json');
+        mealStructureInput.value = JSON.stringify(collectMealStructure() || {});
+        form.submit();
+    });
+
+});
+</script>
+{% endblock %}

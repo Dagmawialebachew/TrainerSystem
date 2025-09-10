@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ branding.brand_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css'%}">
+<link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+    
+
+    <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/chart.min.js' %}"></script>
+   
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <!-- Desktop Navigation (Top) -->
+<nav class="bg-white shadow-sm border-b sticky top-0 z-50 hidden md:block">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      {# ─────────── LOGO ───────────────────────────────────────────────────── #}
+      <div class="flex items-center space-x-2">
+        {% if branding.logo_url %}
+          <img
+            src="{{ branding.logo_url }}"
+            alt="{{ branding.brand_name }}"
+            class="h-8 w-auto rounded-full"
+          >
+        {% else %}
+          <div class="h-8 w-8 bg-primary-500 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-lg">F</span>
+          </div>
+        {% endif %}
+        <a href="{% url 'home' %}">
+          <span class="ml-2 text-lg sm:text-xl font-semibold text-gray-900">
+            {{ branding.brand_name }}
+          </span>
+        </a>
+      </div>
+
+      {# ─────────── NAV LINKS ──────────────────────────────────────────────── #}
+      <div class="flex space-x-6">
+        {% if user.is_authenticated %}
+          {# Trainer Links #}
+          {% if user.is_trainer and user.trainer_profile %}
+            <a href="{% url 'trainers:dashboard' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'trainers' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Dashboard
+            </a>
+            <a href="{% url 'trainers:client_list' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'client_list' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Clients
+            </a>
+            <a href="{% url 'workouts:list' %}"
+               class="nav-link {% if request.resolver_match.app_name == 'workouts' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Workouts
+            </a>
+            <a href="{% url 'nutrition:list' %}"
+               class="nav-link {% if request.resolver_match.app_name == 'nutrition' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Nutrition
+            </a>
+            <a href="{% url 'progress:overview' %}"
+               class="nav-link {% if request.resolver_match.app_name == 'progress' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Progress
+            </a>
+            <a href="{% url 'payments:dashboard' %}"
+               class="nav-link {% if request.resolver_match.app_name == 'payments' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Payments
+            </a>
+            <a href="{% url 'schedule:calendar' %}"
+               class="nav-link {% if request.resolver_match.app_name == 'schedule' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Schedule
+            </a>
+
+          {# Client Links #}
+          {% elif user.is_client and user.client_profile %}
+            <a href="{% url 'clients:dashboard' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'clients' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Dashboard
+            </a>
+            <a href="{% url 'clients:workout_plan' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'workout_plan' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Workouts
+            </a>
+            <a href="{% url 'clients:meal_plan' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'meal_plan' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Nutrition
+            </a>
+            <a href="{% url 'clients:progress' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'progress' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Progress
+            </a>
+            <a href="{% url 'clients:messages' %}"
+               class="nav-link {% if request.resolver_match.url_name == 'messages' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
+              Messages
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {# ─────────── PROFILE / AUTH CTAS ───────────────────────────────────── #}
+      <div class="flex items-center space-x-4">
+        {% if user.is_authenticated and user.is_trainer and user.trainer_profile or user.is_client and user.client_profile %}
+          {# Profile Link #}
+          <a href="{% if user.is_trainer %}{% url 'trainers:profile' %}{% else %}{% url 'clients:profile' %}{% endif %}"
+             class="flex items-center space-x-2 hover:underline">
+            {% if user.profile_picture %}
+              <img src="{{ user.profile_picture.url }}"
+                   alt="Profile"
+                   class="h-8 w-8 rounded-full object-cover ring-2 ring-primary-400 hover:ring-primary-600 transition">
+            {% elif branding.logo_url and user.is_trainer %}
+              <img src="{{ branding.logo_url }}"
+                   alt="Profile"
+                   class="h-8 w-8 rounded-full object-cover ring-2 ring-primary-400 hover:ring-primary-600 transition">
+      
+            {% else %}
+              <div class="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center ring-2 ring-gray-400 hover:ring-primary-600 transition">
+                <span class="text-sm font-semibold text-gray-700">
+                  {{ user.first_name|default:user.username|slice:":1"|upper }}
+                </span>
+              </div>
+            {% endif %}
+          </a>
+
+          {# Logout Button #}
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+              Logout
+            </button>
+          </form>
+
+        {% else %}
+          {# Help Link on Setup Profile Page #}
+          {% if request.resolver_match.url_name == 'setup_profile' %}
+            <a href="#"
+               class="text-sm text-gray-400 hover:underline">
+              Help
+            </a>
+          {% endif %}
+
+          {# Sign Up & Login Buttons #}
+          <div class="flex space-x-4">
+            <a href="{% url 'accounts:register' %}">
+              <button type="button"
+                      class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+                Sign Up
+              </button>
+            </a>
+            <form method="post" action="{% url 'accounts:login' %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+                Login
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+
+<!-- Mobile Top Bar (User info + Logout) -->
+<!-- Mobile Top Bar -->
+<div class="bg-white shadow-md border-b sticky top-0 z-50 md:hidden">
+  <div class="flex justify-between items-center h-16 px-4">
+    <!-- Profile Access -->
+    <a href="{% if user.is_trainer %}{% url 'trainers:profile' %}{% else %}{% url 'clients:profile' %}{% endif %}" class="flex items-center space-x-2 hover:underline">
+      {% if user.profile_picture %}
+        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-primary-400 hover:ring-primary-600 transition" src="{{ user.profile_picture.url }}" alt="Profile">
+        {% elif branding.logo_url and user.is_trainer %}
+              <img src="{{ branding.logo_url }}"
+                   alt="Profile"
+                   class="h-8 w-8 rounded-full object-cover ring-2 ring-primary-400 hover:ring-primary-600 transition">
+      
+      {% else %}
+      {% if user.is_authenticated %}
+       <div class="h-9 w-9 bg-gray-300 rounded-full flex items-center justify-center ring-2 ring-gray-400 hover:ring-primary-600 transition">
+          <span class="text-sm font-semibold text-gray-700">{{ user.first_name|default:user.username|first|upper }}</span>
+        </div>
+      {% else %}
+       <div class="h-8 w-8 bg-primary-500 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-lg">F</span>
+          </div>
+
+      {%endif %}
+       
+      {% endif %}
+      <span class="text-gray-700 font-medium truncate max-w-[120px]">{{ user.get_full_name|default:user.username }}</span>
+    </a>
+    {% if user.is_authenticated %}
+
+         <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+            Logout
+          </button>
+        </form>
+
+        {% else %}
+        <div class="flex flex-row gap-4">
+
+        <a href="{% url 'accounts:register' %}">
+          <button type="submit" class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+            Sign Up
+          </button>
+        </a>
+        <form method="post" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+          <button type="submit" class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-1.5 rounded-lg font-medium shadow hover:opacity-90 transition">
+            Login
+          </button>
+        </form>
+
+        </div>
+        {% endif %}
+  </div>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<!-- Mobile Bottom Navigation -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden z-50">
+  <div class="flex justify-around items-center h-14">
+
+    {% if user.is_authenticated %}
+      {% if user.is_trainer %}
+        <!-- Home -->
+        <a href="{% url 'trainers:dashboard' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'dashboard' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-home text-lg"></i>
+          <span>Home</span>
+        </a>
+
+        <!-- Clients -->
+        <a href="{% url 'trainers:client_list' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'client_list' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-users text-lg"></i>
+          <span>Clients</span>
+        </a>
+
+        <!-- Workouts -->
+        <a href="{% url 'workouts:list' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.path == '/workouts/' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-dumbbell text-lg"></i>
+          <span>Workouts</span>
+        </a>
+
+        <!-- Schedule -->
+        <a href="{% url 'schedule:calendar' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name in 'calendar today session_detail' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-calendar-day text-lg"></i>
+          <span>Schedule</span>
+        </a>
+
+        <!-- More (Nutrition + Payments) -->
+        <button id="more-trigger"
+                class="flex flex-col items-center text-xs font-medium text-gray-500 hover:text-primary-400"
+                type="button" aria-haspopup="dialog" aria-controls="more-sheet" aria-expanded="false">
+          <i class="fas fa-ellipsis-h text-lg"></i>
+          <span>More</span>
+        </button>
+
+      {% elif user.is_client %}
+        <!-- Client bottom nav variant -->
+        <a href="{% url 'clients:dashboard' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'dashboard' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-home text-lg"></i>
+          <span>Home</span>
+        </a>
+        <a href="{% url 'clients:workout_plan' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'workout_plan' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-dumbbell text-lg"></i>
+          <span>Workouts</span>
+        </a>
+        <a href="{% url 'clients:meal_plan' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'meal_plan' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-dumbbell text-lg"></i>
+          <span>Nutrition</span>
+        </a>
+        <a href="{% url 'clients:progress' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'progress' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-chart-line text-lg"></i>
+          <span>Progress</span>
+        </a>
+        <a href="{% url 'clients:messages' %}"
+           class="flex flex-col items-center text-xs font-medium {% if request.resolver_match.url_name == 'messages' %}text-primary-600{% else %}text-gray-500 hover:text-primary-400{% endif %}">
+          <i class="fas fa-comments text-lg"></i>
+          <span>Messages</span>
+        </a>
+        
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<!-- More bottom sheet -->
+<div id="more-sheet" class="fixed inset-0 z-[60] hidden md:hidden" role="dialog" aria-modal="true" aria-labelledby="more-title">
+  <div id="more-backdrop" class="absolute inset-0 bg-black/30"></div>
+
+  <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl p-4">
+    <div class="mx-auto h-1.5 w-12 rounded-full bg-gray-300 mb-3"></div>
+    <h3 id="more-title" class="sr-only">More</h3>
+
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <!-- Nutrition -->
+      <a href="{% url 'nutrition:list' %}"
+         class="p-3 rounded-xl border hover:bg-gray-50 flex flex-col items-start">
+        <span class="font-medium text-gray-800">Nutrition</span>
+        <span class="text-xs text-gray-500">Plans & meals</span>
+      </a>
+
+      <!-- Payments -->
+      <a href="{% url 'payments:dashboard' %}"
+         class="p-3 rounded-xl border hover:bg-gray-50 flex flex-col items-start">
+        <span class="font-medium text-gray-800">Payments</span>
+        <span class="text-xs text-gray-500">History & invoices</span>
+      </a>
+
+      <!-- Optional extras -->
+      <a href="{% url 'progress:overview' %}"
+         class="p-3 rounded-xl border hover:bg-gray-50 flex flex-col items-start">
+        <span class="font-medium text-gray-800">Progress</span>
+        <span class="text-xs text-gray-500">Reports</span>
+      </a>
+
+      <a href="{% url 'messaging:create' %}"
+         class="p-3 rounded-xl border hover:bg-gray-50 flex flex-col items-start"
+         data-soon="true">
+        <span class="font-medium text-gray-800">Messages</span>
+        <span class="text-xs text-gray-500">Coming soon</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+    
+    <!-- Main -->
+<main class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 lg:py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+<!-- Footer -->
+<footer class="bg-white border-t mt-auto mb-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
+        <p>&copy; 2025 {{ branding.brand_name }}. All rights reserved.</p>
+        <p class="mt-1">Empowering fitness trainers across Ethiopia</p>
+    </div>
+</footer>
+
+    
+{% if messages %}
+<div id="flash-messages" class="fixed top-6 right-6 z-50 flex flex-col space-y-3">
+    {% for message in messages %}
+    <div
+        class="flex items-start max-w-sm w-full p-4 rounded-2xl shadow-lg border-l-4
+               bg-white animate-slide-in-right transition-all duration-500
+               {% if message.tags == 'success' %} border-success-500 text-success-700
+               {% elif message.tags == 'error' %} border-danger-500 text-danger-700
+               {% elif message.tags == 'warning' %} border-warning-500 text-warning-700
+               {% else %} border-primary-500 text-primary-700 {% endif %}">
+        
+        <!-- Icon -->
+        <div class="flex-shrink-0 mt-0.5">
+            {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle text-success-500 text-xl"></i>
+            {% elif message.tags == 'error' %}
+                <i class="fas fa-times-circle text-danger-500 text-xl"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle text-warning-500 text-xl"></i>
+            {% else %}
+                <i class="fas fa-info-circle text-primary-500 text-xl"></i>
+            {% endif %}
+        </div>
+
+        <!-- Message text -->
+        <div class="ml-3 text-sm font-poppins leading-snug">
+            {{ message|safe }}
+        </div>
+
+        <!-- Dismiss button -->
+        <button 
+            class="ml-auto text-neutral-400 hover:text-neutral-600 transition"
+            onclick="this.parentElement.classList.add('opacity-0','translate-x-20'); 
+                     setTimeout(()=>this.parentElement.remove(), 300)">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(120%); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-out;
+}
+</style>
+
+<script>
+  // More sheet open/close
+  (function () {
+    const trigger = document.getElementById('more-trigger');
+    const sheet = document.getElementById('more-sheet');
+    const backdrop = document.getElementById('more-backdrop');
+
+    function openSheet() {
+      sheet.classList.remove('hidden');
+      trigger?.setAttribute('aria-expanded', 'true');
+    }
+    function closeSheet() {
+      sheet.classList.add('hidden');
+      trigger?.setAttribute('aria-expanded', 'false');
+    }
+
+    trigger?.addEventListener('click', openSheet);
+    backdrop?.addEventListener('click', closeSheet);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
+    // Coming soon alert
+    document.querySelectorAll('[data-soon="true"]').forEach((el) => {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        alert('🚧 Coming soon!');
+      });
+    });
+  })();
+</script>
+
+<script>
+  // Auto-dismiss each toast after 5s (staggered a bit so they don’t all vanish together)
+  document.querySelectorAll("#flash-messages > div").forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.add("opacity-0","translate-x-20");
+      setTimeout(()=>el.remove(), 300);
+    }, 5000 + (i * 800));
+  });
+</script>
+
+    <script>
+        // Toggle mobile nav
+        document.getElementById("mobile-menu-toggle")?.addEventListener("click", () => {
+            document.getElementById("mobile-menu").classList.toggle("hidden");
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

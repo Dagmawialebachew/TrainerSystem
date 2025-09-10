@@ -1,0 +1,529 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Your Profile - {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+
+
+<div class="min-h-screen ">
+  <!-- Header -->
+  <header class="px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-black">Edit your profile</h1>
+          <p class="mt-1 text-sm text-black/70">Keep your information current for a more personalized experience.</p>
+        </div>
+        <div class="hidden sm:flex items-center gap-3">
+          <span class="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-white/5 text-black/80 ring-1 ring-white/10">
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            Secure area
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content card -->
+  <main class="px-4 sm:px-6 lg:px-8 pb-32">
+    <div class="max-w-5xl mx-auto">
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for message in messages %}
+            <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-black/90 backdrop-blur">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.35)] overflow-hidden">
+        <!-- Form -->
+        <form id="editProfileForm" method="post" enctype="multipart/form-data" novalidate data-has-picture="{% if has_profile_picture %}true{% else %}false{% endif %}">
+          {% csrf_token %}
+
+          <!-- Section: Profile photo -->
+       <!-- Accordion container (keep once on the page if you’ll add more sections) -->
+<div data-accordion class="space-y-3">
+
+  <!-- Profile photo (collapsible item) -->
+  <section class="rounded-xl border border-gray-200/40 bg-white/5 backdrop-blur overflow-hidden" data-acc-item>
+    <!-- Header trigger -->
+    <button type="button" data-acc-trigger aria-expanded="true"
+            class="w-full flex items-center justify-between px-5 py-4 text-left">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary-100 text-primary-700 text-xs font-semibold">1</span>
+        <span class="text-sm font-semibold text-black">Profile photo</span>
+      </div>
+      <svg class="h-5 w-5 text-black/70 transition-transform rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+      </svg>
+    </button>
+
+    <!-- Collapsible panel -->
+    <div data-acc-panel class="grid transition-[grid-template-rows] duration-300 ease-out"
+         style="grid-template-rows: 1fr;">
+      <div data-acc-content class="min-h-0 overflow-hidden">
+        <!-- Your original section content (unchanged) -->
+        <section class="p-6 sm:p-8 border-b border-white/10">
+          <div class="flex items-start gap-6">
+            <!-- Avatar -->
+              {% if current_profile_picture_url%} 
+<div class="relative">
+              <img id="avatarPreview"
+                   src="{{current_profile_picture_url}}"
+                   class="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover ring-4 ring-white/10 bg-white/10">
+              <button type="button" id="removePhotoBtn"
+                      class="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[11px] px-2 py-0.5 rounded bg-white/10 text-black/80 ring-1 ring-white/15 hover:bg-white/20 transition hidden">
+                Remove
+              </button>
+            </div>             
+             {%else%} 
+             <div class="relative">
+              <img id="avatarPreview"
+                                 class="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover ring-4 ring-white/10 bg-white/10">
+>
+              <button type="button" id="removePhotoBtn"
+                      class="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[11px] px-2 py-0.5 rounded bg-white/10 text-black/80 ring-1 ring-white/15 hover:bg-white/20 transition hidden">
+                Remove
+              </button>
+            </div>         
+              {%endif%}
+            
+
+            <!-- Uploader + Info -->
+            <div class="flex-1 min-w-0">
+              <h2 class="text-base font-semibold text-black">Profile photo</h2>
+              <p class="text-sm text-black/60 mt-1">JPG/PNG/WebP up to 3 MB. Square works best.</p>
+
+              <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <div>
+    <label for="id_profile_picture" class="block text-sm font-medium text-black/90 mb-1">Upload a new photo</label>
+    <div class="relative">
+      {{ profile_form.profile_picture }}
+      {% if profile_form.profile_picture.errors %}
+        <p class="text-xs text-red-300 mt-1">{{ profile_form.profile_picture.errors.0 }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="sm:col-span-1">
+    <div id="dropArea"
+         class="rounded-xl border-2 border-dashed border-primary-200/15 bg-primary-50 p-4 text-center text-black/80 hover:border-primary-500/30 hover:bg-primary-500/[0.07] cursor-pointer transition">
+      <p class="text-sm">Drag & drop an image here, or click to browse</p>
+      <p class="text-[11px] text-black/50 mt-1">Use a clear, front-facing photo</p>
+    </div>
+  </div>
+</div>
+
+
+              <div id="photoRequiredNote" class="mt-3 text-xs text-amber-300/90 hidden">
+                Please add a profile photo to continue.
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- End original content -->
+      </div>
+    </div>
+  </section>
+
+
+
+
+          <!-- Section: Basic information -->
+        <section class="rounded-xl border border-gray-200/40 bg-white/5 backdrop-blur overflow-hidden" data-acc-item>
+  <!-- Header trigger -->
+  <button type="button" data-acc-trigger aria-expanded="false"
+          class="w-full flex items-center justify-between px-5 py-4 text-left">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary-100 text-primary-700 text-xs font-semibold">2</span>
+      <span class="text-sm font-semibold text-black">Basic information</span>
+    </div>
+    <svg class="h-5 w-5 text-black/70 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+    </svg>
+  </button>
+
+  <!-- Collapsible panel -->
+  <div data-acc-panel class="grid transition-[grid-template-rows] duration-300 ease-out"
+       style="grid-template-rows: 0fr;">
+    <div data-acc-content class="min-h-0 overflow-hidden">
+      <!-- Original content -->
+      <section class="p-6 sm:p-8 border-b border-white/10">
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="{{ profile_form.first_name.id_for_label }}" class="block text-sm font-medium text-black/80 mb-1">First name</label>
+            {{ profile_form.first_name }}
+            {% if profile_form.first_name.errors %}
+              <p class="text-xs text-red-300 mt-1">{{ profile_form.first_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ profile_form.last_name.id_for_label }}" class="block text-sm font-medium text-black/80 mb-1">Last name</label>
+            {{ profile_form.last_name }}
+            {% if profile_form.last_name.errors %}
+              <p class="text-xs text-red-300 mt-1">{{ profile_form.last_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ profile_form.email.id_for_label }}" class="block text-sm font-medium text-black/80 mb-1">Email</label>
+            {{ profile_form.email }}
+            {% if profile_form.email.errors %}
+              <p class="text-xs text-red-300 mt-1">{{ profile_form.email.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ profile_form.phone_number.id_for_label }}" class="block text-sm font-medium text-black/80 mb-1">Phone number</label>
+            {{ profile_form.phone_number }}
+            {% if profile_form.phone_number.errors %}
+              <p class="text-xs text-red-300 mt-1">{{ profile_form.phone_number.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ profile_form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-black/80 mb-1">Date of birth</label>
+            {{ profile_form.date_of_birth }}
+            {% if profile_form.date_of_birth.errors %}
+              <p class="text-xs text-red-300 mt-1">{{ profile_form.date_of_birth.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+
+          <!-- Section: Fitness & health -->
+       <section class="rounded-xl border border-gray-200/40 bg-white/5 backdrop-blur overflow-hidden" data-acc-item>
+  <button type="button" data-acc-trigger aria-expanded="false"
+          class="w-full flex items-center justify-between px-5 py-4 text-left">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary-100 text-primary-700 text-xs font-semibold">3</span>
+      <span class="text-sm font-semibold text-black">Fitness & health</span>
+    </div>
+    <svg class="h-5 w-5 text-black/70 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+    </svg>
+  </button>
+
+  <div data-acc-panel class="grid transition-[grid-template-rows] duration-300 ease-out" style="grid-template-rows: 0fr;">
+    <div data-acc-content class="min-h-0 overflow-hidden">
+      <section class="p-6 sm:p-8 border-b border-white/10">
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+   <!-- Fitness fields -->
+<div>
+  <label for="{{ client_form.fitness_goal.id_for_label }}">{{ client_form.fitness_goal.label }}</label>
+  {{ client_form.fitness_goal }}
+  {% if client_form.fitness_goal.errors %}
+    <p>{{ client_form.fitness_goal.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.fitness_level.id_for_label }}">{{ client_form.fitness_level.label }}</label>
+  {{ client_form.fitness_level }}
+  {% if client_form.fitness_level.errors %}
+    <p>{{ client_form.fitness_level.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.height.id_for_label }}">{{ client_form.height.label }}</label>
+  {{ client_form.height }}
+  {% if client_form.height.errors %}
+    <p>{{ client_form.height.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.current_weight.id_for_label }}">{{ client_form.current_weight.label }}</label>
+  {{ client_form.current_weight }}
+  {% if client_form.current_weight.errors %}
+    <p>{{ client_form.current_weight.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.target_weight.id_for_label }}">{{ client_form.target_weight.label }}</label>
+  {{ client_form.target_weight }}
+  {% if client_form.target_weight.errors %}
+    <p>{{ client_form.target_weight.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.dietary_restrictions.id_for_label }}">{{ client_form.dietary_restrictions.label }}</label>
+  {{ client_form.dietary_restrictions }}
+  {% if client_form.dietary_restrictions.errors %}
+    <p>{{ client_form.dietary_restrictions.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.medical_conditions.id_for_label }}">{{ client_form.medical_conditions.label }}</label>
+  {{ client_form.medical_conditions }}
+  {% if client_form.medical_conditions.errors %}
+    <p>{{ client_form.medical_conditions.errors.0 }}</p>
+  {% endif %}
+</div>
+
+<div>
+  <label for="{{ client_form.allergies.id_for_label }}">{{ client_form.allergies.label }}</label>
+  {{ client_form.allergies }}
+  {% if client_form.allergies.errors %}
+    <p>{{ client_form.allergies.errors.0 }}</p>
+  {% endif %}
+</div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+          <!-- Section: Preferences -->
+         <section class="rounded-xl border border-gray-200/40 bg-white/5 backdrop-blur overflow-hidden" data-acc-item>
+  <button type="button" data-acc-trigger aria-expanded="false"
+          class="w-full flex items-center justify-between px-5 py-4 text-left">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary-100 text-primary-700 text-xs font-semibold">4</span>
+      <span class="text-sm font-semibold text-black">Preferences</span>
+    </div>
+    <svg class="h-5 w-5 text-black/70 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+    </svg>
+  </button>
+
+  <div data-acc-panel class="grid transition-[grid-template-rows] duration-300 ease-out" style="grid-template-rows: 0fr;">
+    <div data-acc-content class="min-h-0 overflow-hidden">
+      <section class="p-6 sm:p-8">
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Preferred workout days -->
+  <div class="flex flex-col gap-2">
+    <label class="text-sm font-semibold text-gray-900 tracking-tight">
+      Preferred Workout Days
+    </label>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-1">
+      {% for checkbox in client_form.preferred_workout_days %}
+        <label class="group inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-xl cursor-pointer transition hover:border-primary-400 hover:bg-primary-50">
+          {{ checkbox.tag }}
+          <span class="text-sm text-gray-800 group-hover:text-primary-700">{{ checkbox.choice_label }}</span>
+        </label>
+      {% endfor %}
+    </div>
+
+    {% if field.help_text %}
+      <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+    {% endif %}
+
+    {% for error in form.preferred_workout_days.errors %}
+      <p class="text-xs text-red-600 mt-1">{{ error }}</p>
+    {% endfor %}
+  </div>
+
+
+
+<!-- Workout duration -->
+<div>
+  <label for="{{ client_form.workout_duration_preference.id_for_label }}">
+    {{ client_form.workout_duration_preference.label }}
+  </label>
+  {{ client_form.workout_duration_preference }}
+  {% if client_form.workout_duration_preference.errors %}
+    <p>{{ client_form.workout_duration_preference.errors.0 }}</p>
+  {% endif %}
+</div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+
+          </div>
+
+          <!-- Sticky action bar -->
+          <div id="actionBar" class="fixed left-0 right-0 bottom-0 z-40">
+            <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pb-5">
+              <div class="rounded-xl  px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span id="unsavedDot" class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 hidden"></span>
+                  <p id="unsavedText" class="text-sm text-black/80 hidden">You have unsaved changes</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button type="reset" class="px-4 py-2 rounded-lg border border-white/15 text-black/90 bg-white/5 hover:bg-white/10 transition">Reset</button>
+                  <button id="saveBtn" type="submit" class="px-5 py-2.5 rounded-lg bg-primary-500 text-white font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed">
+                    Save changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="h-24"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const acc = document.querySelector('[data-accordion]');
+  if (!acc) return;
+
+  const items = Array.from(acc.querySelectorAll('[data-acc-item]'));
+
+  function setOpen(item, open) {
+    const trigger = item.querySelector('[data-acc-trigger]');
+    const panel = item.querySelector('[data-acc-panel]');
+    const icon = trigger.querySelector('svg');
+
+    trigger.setAttribute('aria-expanded', String(open));
+    panel.style.gridTemplateRows = open ? '1fr' : '0fr';
+    if (icon) icon.classList.toggle('rotate-180', open);
+  }
+
+  function closeAll(except = null) {
+    items.forEach(i => { if (i !== except) setOpen(i, false); });
+  }
+
+  // Initialize based on aria-expanded
+  items.forEach((item, idx) => {
+    const trigger = item.querySelector('[data-acc-trigger]');
+    const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+    setOpen(item, isOpen);
+    trigger.addEventListener('click', () => {
+      const nowOpen = trigger.getAttribute('aria-expanded') === 'true';
+      // Keep it single-open; change to remove closeAll() if you want multi-open
+      closeAll(item);
+      setOpen(item, !nowOpen);
+    });
+  });
+
+  // Expand/Collapse all controls
+  const expandAllBtn = document.querySelector('[data-acc-expand-all]');
+  const collapseAllBtn = document.querySelector('[data-acc-collapse-all]');
+  expandAllBtn?.addEventListener('click', () => items.forEach(i => setOpen(i, true)));
+  collapseAllBtn?.addEventListener('click', () => items.forEach(i => setOpen(i, false)));
+})();
+</script>
+
+<script>
+(function () {
+  const form = document.getElementById("editProfileForm");
+  const drop = document.getElementById("dropArea");
+  const fileInput = document.getElementById("id_profile_picture");
+  const preview = document.getElementById("avatarPreview");
+  const removeBtn = document.getElementById("removePhotoBtn");
+  const hadPicture = form && form.dataset.hasPicture === "true";
+  const saveBtn = document.getElementById("saveBtn");
+  const unsavedDot = document.getElementById("unsavedDot");
+  const unsavedText = document.getElementById("unsavedText");
+  const photoNote = document.getElementById("photoRequiredNote");
+
+  // Unsaved state
+  let dirty = false;
+  function markDirty() {
+    if (dirty) return;
+    dirty = true;
+    saveBtn.disabled = false;
+    unsavedDot.classList.remove("hidden");
+    unsavedText.classList.remove("hidden");
+  }
+  function clearDirty() {
+    dirty = false;
+    saveBtn.disabled = true;
+    unsavedDot.classList.add("hidden");
+    unsavedText.classList.add("hidden");
+  }
+
+  // Attach change events to all inputs to mark dirty
+  Array.from(form.elements).forEach(el => {
+    if (["INPUT","SELECT","TEXTAREA"].includes(el.tagName)) {
+      el.addEventListener("change", markDirty);
+      el.addEventListener("input", markDirty);
+    }
+  });
+
+  // Avatar handling
+  function setPreview(file) {
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    removeBtn.classList.remove("hidden");
+    markDirty();
+  }
+
+  function clearPreview() {
+    const original = "{{ current_profile_picture_url }}";
+    preview.src = original;
+    if (fileInput) fileInput.value = "";
+    removeBtn.classList.add("hidden");
+    markDirty();
+  }
+
+  function validFile(file) {
+    const ok = ["image/jpeg", "image/png", "image/webp"];
+    const max = 3 * 1024 * 1024;
+    if (!ok.includes(file.type)) { alert("Please upload JPG, PNG, or WebP."); return false; }
+    if (file.size > max) { alert("Max file size is 3 MB."); return false; }
+    return true;
+  }
+
+  if (drop) {
+    drop.addEventListener("click", () => fileInput && fileInput.click());
+    drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("border-white/30"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("border-white/30"));
+    drop.addEventListener("drop", (e) => {
+      e.preventDefault(); drop.classList.remove("border-white/30");
+      const file = e.dataTransfer.files[0];
+      if (file && validFile(file)) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        setPreview(file);
+      }
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && validFile(file)) setPreview(file);
+    });
+  }
+
+  if (removeBtn) {
+    removeBtn.addEventListener("click", clearPreview);
+  }
+
+  // Require a photo only if none existed and none uploaded
+  function enforcePhotoRequirement() {
+    const hasNew = fileInput && fileInput.files && fileInput.files.length > 0;
+    const mustAdd = !hadPicture && !hasNew && preview && preview.src === "";
+    if (photoNote) photoNote.classList.toggle("hidden", !( !hadPicture && !hasNew ));
+  }
+  enforcePhotoRequirement();
+
+  form.addEventListener("submit", (e) => {
+    const hasNew = fileInput && fileInput.files && fileInput.files.length > 0;
+    if (!hadPicture && !hasNew) {
+      e.preventDefault();
+      return;
+    }
+    // let server handle the rest
+  });
+
+  form.addEventListener("reset", () => {
+    setTimeout(() => { // allow browser to reset inputs
+      clearDirty();
+      enforcePhotoRequirement();
+    }, 0);
+  });
+
+
+})();
+</script>
+{% endblock %}

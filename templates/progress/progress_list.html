@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between overflow-hidden">
+  <!-- Left Section -->
+  <div class="z-10">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-900 flex items-center gap-2">
+      <i class="fas fa-list text-yellow-500"></i> 
+      <span>Progress List</span>
+    </h1>
+    <p class="text-gray-500 text-base sm:text-lg mt-1">
+      Track and manage all client progress in one place.
+    </p>
+  </div>
+
+  <!-- Right Section: Actions -->
+  <div class="flex flex-wrap gap-3 z-10">
+    <a href="{% url 'clients:log_progress' %}" class="inline-flex items-center px-5 py-2 bg-green-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-green-700 transition">
+      <i class="fas fa-plus mr-2"></i> Add Progress
+    </a>
+    <a href="{% url 'progress:overview' %}" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-indigo-700 transition">
+      <i class="fas fa-chart-pie mr-2"></i> Progress Overview
+    </a>
+    <a href="{% url 'progress:create_goal' %}" class="inline-flex items-center px-5 py-2 bg-yellow-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-yellow-700 transition">
+      <i class="fas fa-bullseye mr-2"></i> Create Goal
+    </a>
+  </div>
+
+  <!-- Background Flair -->
+  <div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute -top-16 -right-32 w-96 h-96 bg-primary-100/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-100/10 rounded-full blur-2xl"></div>
+  </div>
+</div>
+
+
+<div class="px-6 py-8 bg-gray-50 min-h-screen">
+  <h1 class="text-3xl max-md:text-xl font-bold text-gray-800 mb-6"> <i class="fas fa-chart-bar text-primary-500 mr-1"></i> Clients Progress Overview</h1>
+
+  <!-- Stats Summary -->
+
+  <!-- Progress Table -->
+
+   <!-- Filter Card -->
+<div class="bg-white rounded-xl shadow-md border border-gray-100 mb-6">
+  <form method="get"
+        class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+    <!-- Client Name Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-user text-primary-500 mr-1"></i>Client Name
+      </label>
+      <input type="text" name="client" value="{{ filters.client }}"
+             placeholder="Search by name"
+             class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 transition" />
+    </div>
+
+    <!-- Date Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        <i class="fas fa-calendar-alt text-primary-500 mr-1"></i>Date
+      </label>
+      <input type="date" name="date" value="{{ filters.date }}"
+             class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 transition" />
+    </div>
+
+    <!-- Search Button -->
+    <div class="flex gap-3">
+      <button type="submit"
+              class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center justify-center gap-2">
+        <i class="fas fa-search"></i>Search
+      </button>
+      <a href="{% url 'progress:list' %}"
+         class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow transition flex items-center justify-center gap-2">
+        <i class="fas fa-times-circle"></i>Clear
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Table Container -->
+<div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50 sticky top-0 z-10">
+      <tr>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Client
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Date
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Workout
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Meal
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Energy
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Sleep
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Stress
+        </th>
+        <th scope="col"
+            class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Actions
+        </th>
+      </tr>
+    </thead>
+
+    <tbody class="bg-white divide-y divide-gray-200">
+      {% for entry in progress_list %}
+      <tr class="hover:bg-gray-50 transition-colors duration-150">
+        <!-- Client Name -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          {{ entry.client.user.get_full_name }}
+        </td>
+
+        <!-- Date -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+          {{ entry.date }}
+        </td>
+
+        <!-- Workout Status -->
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+            {% if entry.workout_completed %}
+              bg-green-100 text-green-800
+            {% else %}
+              bg-red-100 text-red-800
+            {% endif %}">
+            {% if entry.workout_completed %}Completed{% else %}Missed{% endif %}
+          </span>
+        </td>
+
+        <!-- Meal Status -->
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+            {% if entry.meal_plan_followed %}
+              bg-green-100 text-green-800
+            {% else %}
+              bg-red-100 text-red-800
+            {% endif %}">
+            {% if entry.meal_plan_followed %}Followed{% else %}Skipped{% endif %}
+          </span>
+        </td>
+
+        <!-- Energy Level -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.energy_level == 3 %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">High</span>
+          {% elif entry.energy_level == 2 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Moderate</span>
+          {% else %}
+            <span class="inline-flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Low</span>
+          {% endif %}
+        </td>
+
+        <!-- Sleep Hours -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.sleep_hours < 6 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Low
+            </span>
+          {% elif entry.sleep_hours >= 8 %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Rested
+            </span>
+          {% else %}
+            <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Moderate
+            </span>
+          {% endif %}
+        </td>
+
+        <!-- Stress Level -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.stress_level == 3 %}
+            <span class="inline-flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">High</span>
+          {% elif entry.stress_level == 2 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Moderate</span>
+          {% else %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Low</span>
+          {% endif %}
+        </td>
+
+        <!-- Actions -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          <div class="flex items-center space-x-3">
+            <a href="{% url 'progress:client_progress' entry.client.pk %}"
+               class="text-primary-600 hover:text-primary-800 focus:outline-none"
+               aria-label="View">
+              <i class="fas fa-eye"></i>
+            </a>
+
+            <form method="post" action="{% url 'progress:delete' entry.pk %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="text-red-600 hover:text-red-800 focus:outline-none"
+                      aria-label="Delete">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="px-6 py-8 text-center text-gray-500 italic">
+          No entries found.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+{% if is_paginated %}
+  <div class="mt-6 flex justify-center items-center space-x-2 text-sm">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if filters.client %}&client={{ filters.client }}{% endif %}{% if filters.date %}&date={{ filters.date }}{% endif %}"
+         class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+        <i class="fas fa-angle-double-left"></i> First
+      </a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if filters.client %}&client={{ filters.client }}{% endif %}{% if filters.date %}&date={{ filters.date }}{% endif %}"
+         class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+        <i class="fas fa-angle-left"></i> Prev
+      </a>
+    {% endif %}
+
+    <span class="px-3 py-1 rounded-lg bg-primary-100 text-primary-700 font-semibold">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if filters.client %}&client={{ filters.client }}{% endif %}{% if filters.date %}&date={{ filters.date }}{% endif %}"
+         class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+        Next <i class="fas fa-angle-right"></i>
+      </a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if filters.client %}&client={{ filters.client }}{% endif %}{% if filters.date %}&date={{ filters.date }}{% endif %}"
+         class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+        Last <i class="fas fa-angle-double-right"></i>
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
+
+  
+</div>
+
+{% endblock %}
+
+

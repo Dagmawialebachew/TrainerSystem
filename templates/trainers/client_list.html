@@ -1,0 +1,183 @@
+{% extends 'list_base.html' %}
+
+{% block list_title %}
+<i class="fas fa-users text-primary-500 mr-2"></i>Your Clients
+{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'trainers:add_client' %}" 
+   class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 transition transform flex items-center space-x-2">
+    <i class="fas fa-user-plus"></i>
+    <span>Add Client</span>
+</a>
+{% endblock %}
+
+{% block cards_view %}
+{% for client in clients %}
+<div class="relative w-full max-w-sm mx-auto">
+
+  <!-- Card -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center w-full h-full transition duration-300 hover:shadow-xl">
+
+    <!-- Streak Badge -->
+    {% if client.streak_days >= 7 %}
+    <span class="absolute top-4 left-4 bg-red-100 text-red-700 text-xs font-semibold px-2 py-1 rounded-full animate-pulse shadow">
+      🔥 {{ client.streak_days }}-day streak
+    </span>
+    {% endif %}
+
+    <!-- Avatar -->
+    {% if client.user.profile_picture %}
+      <img class="h-24 w-24 rounded-full object-cover border-4 border-primary-100 shadow-md ring-2 ring-offset-2 ring-primary-300 hover:ring-primary-500 transition duration-300" 
+           src="{{ client.user.profile_picture.url }}">
+    {% else %}
+      <div class="h-24 w-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-bold text-2xl shadow-inner">
+        {{ client.user.first_name.0 }}{{ client.user.last_name.0 }}
+      </div>
+    {% endif %}
+
+    <!-- Name & Goal -->
+    <h3 class="mt-4 text-xl font-semibold text-primary-900 text-center">{{ client.user.get_full_name }}</h3>
+    <span class="inline-flex items-center bg-primary-100 text-primary-700 text-xs px-2 py-1 rounded-full mt-2">
+      <i class="fas fa-bullseye mr-1"></i>{{ client.get_fitness_goal_display }}
+    </span>
+
+    <!-- Last Update -->
+    <p class="text-xs text-gray-400 mt-2">
+      <i class="fas fa-calendar-alt mr-1"></i>
+      Last update: {% if client.recent_progress %}{{ client.recent_progress.date }}{% else %}—{% endif %}
+    </p>
+
+    <!-- Action Buttons -->
+    <div class="mt-5 grid grid-cols-2 gap-2 w-full text-xs font-medium">
+      <a href="{% url 'trainers:client_detail' client.pk %}" class="btn-icon bg-success-500 text-white">
+        <i class="fas fa-eye mr-1"></i> View
+      </a>
+      <a href="{% url 'trainers:edit_client' client.pk %}" class="btn-icon bg-warning-500 text-white">
+        <i class="fas fa-edit mr-1"></i> Edit
+      </a>
+      <a href="{% url 'progress:add_progress' client_pk=client.pk %}" class="btn-icon bg-blue-500 text-white">
+        <i class="fas fa-plus-circle mr-1"></i> Add Progress
+      </a>
+      <a href="{% url 'progress:goal_list' %}" class="btn-icon bg-indigo-500 text-white">
+        <i class="fas fa-bullseye mr-1"></i> Goals
+      </a>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="col-span-full text-center py-12">
+  <i class="fas fa-users-slash text-4xl text-primary-300 mb-4"></i>
+  <p class="text-lg text-primary-500">No clients yet</p>
+  <a href="{% url 'trainers:add_client' %}" class="mt-2 inline-block text-primary-600 hover:underline">
+    Add your first client
+  </a>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block table_view %}
+<div class="overflow-x-auto">
+  <div class="inline-block min-w-full align-middle">
+    <div class="overflow-hidden shadow-xl ring-1 ring-black/5 rounded-2xl bg-white">
+      <table class="min-w-full divide-y divide-gray-200">
+        <!-- Table Head -->
+        <thead class="bg-gradient-to-r from-primary-50 to-primary-100">
+          <tr>
+            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-primary-700 uppercase tracking-wider">
+              <i class="fas fa-user mr-2"></i>Client
+            </th>
+            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-primary-700 uppercase tracking-wider">
+              <i class="fas fa-bullseye mr-2"></i>Goal
+            </th>
+            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-primary-700 uppercase tracking-wider">
+              <i class="fas fa-dumbbell mr-2"></i>Fitness Level
+            </th>
+            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-primary-700 uppercase tracking-wider">
+              <i class="fas fa-calendar-alt mr-2"></i>Last Progress
+            </th>
+            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-primary-700 uppercase tracking-wider">
+              <i class="fas fa-tools mr-2"></i>Actions
+            </th>
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody class="divide-y divide-gray-100 bg-white">
+          {% for client in clients %}
+          <tr class="hover:bg-primary-50/60 transition-colors duration-200">
+            <!-- Client -->
+            <td class="px-6 py-4 flex items-center gap-3">
+              {% if client.user.profile_picture %}
+                <img class="h-12 w-12 rounded-full object-cover shadow-sm ring-2 ring-primary-200" src="{{ client.user.profile_picture.url }}">
+              {% else %}
+                <div class="h-12 w-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-semibold text-base shadow-sm ring-2 ring-primary-200">
+                  {{ client.user.first_name.0 }}{{ client.user.last_name.0 }}
+                </div>
+              {% endif %}
+              <span class="font-medium text-gray-900">{{ client.user.get_full_name }}</span>
+            </td>
+
+            <!-- Goal -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ client.get_fitness_goal_display }}</td>
+
+            <!-- Fitness Level -->
+            <td class="px-6 py-4 text-sm text-gray-600">{{ client.get_fitness_level_display }}</td>
+
+            <!-- Last Progress -->
+            <td class="px-6 py-4 text-sm text-gray-500">
+              {% if client.recent_progress %}
+                {{ client.recent_progress.date }}
+              {% else %}
+                <span class="italic text-gray-400">No progress yet</span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td class="px-6 py-4 flex flex-wrap gap-3">
+              <a href="{% url 'trainers:client_detail' client.pk %}" 
+                 class="flex items-center gap-1 text-success-600 hover:text-success-700 transition">
+                <i class="fas fa-eye"></i><span class="hidden sm:inline">View</span>
+              </a>
+              <a href="{% url 'trainers:edit_client' client.pk %}" 
+                 class="flex items-center gap-1 text-warning-600 hover:text-warning-700 transition">
+                <i class="fas fa-edit"></i><span class="hidden sm:inline">Edit</span>
+              </a>
+              <a href="{% url 'progress:add_progress' %}" 
+                 class="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition">
+                <i class="fas fa-plus-circle"></i><span class="hidden sm:inline">Progress</span>
+              </a>
+              <a href="{% url 'progress:goal_list' %}" 
+                 class="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 transition">
+                <i class="fas fa-bullseye"></i><span class="hidden sm:inline">Goals</span>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-400">
+              <i class="fas fa-users-slash mr-2"></i>No clients found. 
+              <a href="{% url 'trainers:add_client' %}" class="text-primary-600 hover:underline">Add a client</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block pagination %}
+{% if is_paginated %}
+<div class="flex justify-center mt-4 space-x-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded-md hover:bg-primary-50">&laquo; Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 border rounded-md bg-primary-100">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded-md hover:bg-primary-50">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

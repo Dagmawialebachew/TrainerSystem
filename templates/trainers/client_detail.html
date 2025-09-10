@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% block title %}Client Detail – {{ client.user.get_full_name }}{% endblock %}
+{% block content %}
+
+<!-- Header Section -->
+<div>
+  <a href="{% url 'trainers:client_list' %}" 
+  class="text-accent-500 font-medium hover:text-accent-700 flex items-center space-x-2">
+  <i class="fas fa-arrow-left"></i>
+  <span>Back</span>
+</a>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-between bg-white shadow-md rounded-2xl p-6 mb-6">
+  <div class="flex items-center space-x-4">
+    {% if client.user.profile_picture %}
+      <img src="{{ client.user.profile_picture.url }}" class="h-20 w-20 rounded-full object-cover border-4 border-primary-100 shadow-md ring-2 ring-primary-300 hover:ring-primary-500 transition">
+    {% else %}
+      <div class="h-20 w-20 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-bold text-xl shadow-inner">
+        {{ client.user.first_name.0 }}{{ client.user.last_name.0 }}
+      </div>
+    {% endif %}
+    <div>
+      <h1 class="text-2xl font-bold text-primary-900">{{ client.user.get_full_name }}</h1>
+      <span class="inline-flex items-center bg-primary-100 text-primary-700 text-xs px-2 py-1 rounded-full mt-1">
+        <i class="fas fa-bullseye mr-1"></i>{{ client.get_fitness_goal_display }}
+      </span>
+    </div>
+  </div>
+  <div class="mt-4 md:mt-0 flex space-x-2 ">
+    <a href="{% url 'progress:add_progress' client.pk %}" class="btn-icon bg-success-500 text-white">
+      <i class="fas fa-plus-circle mr-2"></i> Add Progress
+    </a>
+    <a href="{% url 'trainers:edit_client' client.pk %}" class="btn-icon bg-warning-400 text-white">
+      <i class="fas fa-edit mr-2"></i> Edit Info
+    </a>
+    <a href="{% url 'trainers:delete_client' client.pk %}" class="btn-icon bg-danger-500 text-white">
+      <i class="fas fa-trash-alt mr-2"></i> Delete
+    </a>
+ 
+  </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+  <!-- Current Weight -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Current Weight</h3>
+      <p class="text-3xl font-bold text-blue-600">{{ client.current_weight|default:"—" }} kg</p>
+    </div>
+    <div class="bg-blue-100 p-4 rounded-full">
+      <i class="fas fa-weight text-blue-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Target Weight -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Target Weight</h3>
+      <p class="text-3xl font-bold text-green-600">{{ client.target_weight|default:"—" }} kg</p>
+    </div>
+    <div class="bg-green-100 p-4 rounded-full">
+      <i class="fas fa-bullseye text-green-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- BMI -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">BMI</h3>
+      <p class="text-3xl font-bold text-purple-600">{{ client.current_bmi|default:"—" }}</p>
+    </div>
+    <div class="bg-purple-100 p-4 rounded-full">
+      <i class="fas fa-heartbeat text-purple-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Fitness Level -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Fitness Level</h3>
+      <p class="text-3xl font-bold text-red-600">{{ client.get_fitness_level_display }}</p>
+    </div>
+    <div class="bg-red-100 p-4 rounded-full">
+      <i class="fas fa-dumbbell text-red-600 text-2xl"></i>
+    </div>
+  </div>
+</div>
+
+
+<!-- Plans -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+  <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-3">Active Workout Plan</h3>
+    {% if active_workout_plan %}
+      <p class="text-primary-700 font-medium">{{ active_workout_plan.name }}</p>
+      <p class="text-primary-500 text-sm mt-1">{{ active_workout_plan.description }}</p>
+    {% else %}
+      <p class="text-primary-400">No active workout plan</p>
+    {% endif %}
+  </div>
+  <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-3">Active Meal Plan</h3>
+    {% if active_meal_plan %}
+      <p class="text-primary-700 font-medium">{{ active_meal_plan.name }}</p>
+      <p class="text-primary-500 text-sm mt-1">{{ active_meal_plan.description }}</p>
+    {% else %}
+      <p class="text-primary-400">No active meal plan</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Health & Preferences -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+  <div class="info-card">
+    <h3><i class="fas fa-notes-medical text-primary-400 mr-2"></i>Health Info</h3>
+    <p><strong>Medical Conditions:</strong> {{ client.medical_conditions|default:"-" }}</p>
+    <p><strong>Allergies:</strong> {{ client.allergies|default:"-" }}</p>
+    <p><strong>Dietary Restrictions:</strong> {{ client.get_dietary_restrictions_display }}</p>
+  </div>
+  <div class="info-card">
+    <h3><i class="fas fa-calendar-check text-primary-400 mr-2"></i>Preferences</h3>
+    <p><strong>Workout Days:</strong> {{ client.preferred_workout_days|default:"-" }}</p>
+    <p><strong>Workout Duration:</strong> {{ client.workout_duration_preference }} min</p>
+  </div>
+  <div class="info-card">
+    <h3><i class="fas fa-comment-dots text-primary-400 mr-2"></i>Trainer Notes</h3>
+    <p>{{ client.notes|default:"No notes yet" }}</p>
+  </div>
+</div>
+
+<!-- Recent Progress -->
+<div class="bg-white shadow-lg rounded-2xl p-6 mt-6 hover:shadow-xl transition">
+  <h3 class="text-xl font-semibold text-primary-900 mb-4">
+    <i class="fas fa-history text-primary-400 mr-2"></i>Recent Progress
+  </h3>
+
+  {% if recent_progress %}
+  <div class="overflow-x-auto">
+  <table class="min-w-[800px] table-fixed divide-y divide-primary-200 text-sm">
+    <thead class="bg-primary-50 text-primary-500 uppercase tracking-wide text-xs font-semibold">
+      <tr>
+        <th class="px-4 py-2 text-left whitespace-nowrap"><i class="fas fa-calendar-alt mr-1"></i>Date</th>
+        <th class="px-4 py-2 text-left whitespace-nowrap"><i class="fas fa-dumbbell mr-1"></i>Workout</th>
+        <th class="px-4 py-2 text-left whitespace-nowrap"><i class="fas fa-utensils mr-1"></i>Meal Plan</th>
+        <th class="px-4 py-2 text-left whitespace-nowrap"><i class="fas fa-sticky-note mr-1"></i>Notes</th>
+        <th class="px-4 py-2 text-left whitespace-nowrap"><i class="fas fa-sticky-note mr-1"></i>Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-primary-100">
+      {% for progress in recent_progress %}
+      <tr class="hover:bg-primary-50 transition">
+        <td class="px-4 py-3 text-primary-900 font-medium whitespace-nowrap">{{ progress.date }}</td>
+        <td class="px-4 py-3 whitespace-nowrap">
+          {% if progress.workout_completed %}
+            <span class="inline-flex items-center bg-success-100 text-success-700 px-2 py-0.5 rounded-full text-xs font-medium">
+              <i class="fas fa-check-circle mr-1"></i>Completed
+            </span>
+          {% else %}
+            <span class="text-gray-400 text-xs">—</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 whitespace-nowrap">
+          {% if progress.meal_plan_followed %}
+            <span class="inline-flex items-center bg-info-100 text-info-700 px-2 py-0.5 rounded-full text-xs font-medium">
+              <i class="fas fa-check-circle mr-1"></i>Followed
+            </span>
+          {% else %}
+            <span class="text-gray-400 text-xs">—</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-primary-500">
+          {% if progress.notes %}
+            {{ progress.notes|truncatewords:15 }}
+          {% else %}
+            <span class="text-gray-400 text-xs">No notes</span>
+          {% endif %}
+        </td>
+          <td class="px-6 py-4 flex flex-wrap gap-2 text-xs font-medium">
+            <a href="{% url 'progress:client_progress' progress.client.pk %}" class="text-primary-600 hover:underline flex items-center space-x-1">
+              <i class="fas fa-eye"></i><span>View</span>
+            </a>
+        
+        <form method="get" action="{% url 'progress:delete' progress.pk %}">
+  <button type="submit" class="text-danger-600 hover:underline flex items-center space-x-1">
+    <i class="fas fa-trash"></i><span>Delete</span>
+  </button>
+</form>
+
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+  {% else %}
+    <p class="text-primary-400">No progress updates yet.</p>
+  {% endif %}
+</div>
+
+
+<!-- Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+  <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-3">Weight Progress</h3>
+    <canvas id="weightChart" height="150"></canvas>
+  </div>
+ <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+  <h3 class="text-xl font-semibold text-primary-900 mb-3">Workout Progress</h3>
+  <canvas id="workoutChart" height="150"></canvas>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const weightLabels = [{% for progress in recent_progress %}'{{ progress.date }}',{% endfor %}];
+  const weightData = [{% for progress in recent_progress %}{{ progress.current_weight|default:0 }},{% endfor %}];
+  renderWeightChart('weightChart', weightLabels, weightData);
+});
+</script>
+<script>
+  const ctx = document.getElementById('workoutChart').getContext('2d');
+  const workoutChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [
+       
+        {
+          label: "Sleep Hours",
+          data: {{ chart_sleep|safe }},
+          backgroundColor: "#38bdf8",
+          yAxisID: 'y1'
+        },
+        {
+          label: "Energy Level (1-5)",
+          data: {{ chart_energy|safe }},
+          backgroundColor: "#f59e0b",
+          yAxisID: 'y1'
+        },
+        {
+          label: "Stress Level (1-5)",
+          data: {{ chart_stress|safe }},
+          backgroundColor: "#ef4444",
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      stacked: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: { display: true, text: 'Adherence & Weight' }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Sleep / Energy / Stress' }
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

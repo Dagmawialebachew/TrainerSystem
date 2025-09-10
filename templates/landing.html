@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ branding.brand_name }} - Fitness Training Platform for Ethiopia{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<!-- Hero Section -->
+
+<section id="hero" class="relative bg-white scroll-mt-20 overflow-hidden">
+  <!-- Floating gradient blobs -->
+  <div class="absolute max-sm:hidden w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-tr from-primary-100 to-primary-300 opacity-30 top-20 left-1/4 animate-float-slow animate-rotate-slow"></div>
+  <div class="absolute w-48 h-48 md:w-72 md:h-72 rounded-full bg-gradient-to-bl from-primary-200 to-primary-400 opacity-20 top-40 right-1/4 animate-float-slow animate-rotate-slow-reverse"></div>
+  <div class="absolute max-sm:hidden w-32 h-32 md:w-56 md:h-56 rounded-full bg-gradient-to-r from-primary-300 to-primary-500 opacity-15 bottom-20 left-1/3 animate-float-slow animate-rotate-slow"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 lg:px-12 py-28 text-center">
+    <!-- Hero Title -->
+    <h1 class="hero-fade text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
+      Empower Your <span class="text-primary-600">Fitness Journey</span>
+    </h1>
+
+    <!-- Hero Subtitle -->
+    <p class="hero-fade mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+      The complete platform for fitness trainers in Ethiopia. Manage clients, create personalized workout and meal plans, track progress, and grow your fitness business — all in one place.
+    </p>
+
+    <!-- CTA Buttons -->
+    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+      <a href="{% url 'accounts:register' %}" 
+         class="hero-fade inline-flex items-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl shadow-lg transition">
+        <i class="fas fa-user-plus"></i> Start as Trainer
+      </a>
+      <a href="{% url 'accounts:register' %}" 
+         class="hero-fade inline-flex items-center gap-2 px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl shadow transition">
+        <i class="fas fa-user-friends"></i> Join as Client
+      </a>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="mt-12 flex flex-wrap justify-center gap-6 text-gray-500 text-sm">
+      <span class="hero-fade inline-flex items-center gap-2"><i class="fas fa-credit-card"></i> No credit card required</span>
+      <span class="hero-fade inline-flex items-center gap-2"><i class="fas fa-lock"></i> Secure platform</span>
+      <span class="hero-fade inline-flex items-center gap-2"><i class="fas fa-bolt"></i> Instant setup</span>
+    </div>
+
+    <!-- Stats row -->
+    <div class="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto">
+      <div class="hero-stat flex flex-col items-center">
+        <i class="fas fa-dumbbell text-secondary-600 text-2xl mb-2"></i>
+        <p class="hero-counter text-2xl font-bold text-gray-900">50+</p>
+        <p class="text-gray-600 text-sm">Workouts Created</p>
+      </div>
+      <div class="hero-stat flex flex-col items-center">
+        <i class="fas fa-users text-secondary-600 text-2xl mb-2"></i>
+        <p class="hero-counter text-2xl font-bold text-gray-900">20+</p>
+        <p class="text-gray-600 text-sm">Clients Onboarded</p>
+      </div>
+      <div class="hero-stat flex flex-col items-center">
+        <i class="fas fa-chart-line text-secondary-600 text-2xl mb-2"></i>
+        <p class="hero-counter text-2xl font-bold text-gray-900">100%</p>
+        <p class="text-gray-600 text-sm">Trainer Growth Focus</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Call to Action + Testimonials -->
+
+
+<!-- Features Section -->
+<section id="features" class="py-20 max-sm:py-15 bg-white relative">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <!-- Heading -->
+    <div class="lg:text-center">
+      <h2 class="text-sm font-semibold text-secondary-600 uppercase tracking-wide">
+        <i class="fas fa-star mr-1"></i> Features
+      </h2>
+      <p class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+        Everything you need to succeed
+      </p>
+      <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+        Built specifically for Ethiopian fitness trainers with a local food database, cultural considerations, and multi-language support.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="mt-16 grid gap-12 sm:grid-cols-2 lg:grid-cols-2">
+      
+      <!-- Feature 1 -->
+      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
+        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
+          <i class="fas fa-users text-secondary-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Client Management</h3>
+          <p class="mt-2 text-gray-600">
+            Manage unlimited clients with detailed profiles, progress tracking, and personalized communication.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
+        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
+          <i class="fas fa-utensils text-secondary-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Ethiopian Nutrition Database</h3>
+          <p class="mt-2 text-gray-600">
+            Comprehensive Ethiopian food database with nutrition info and cultural considerations.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
+        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
+          <i class="fas fa-robot text-secondary-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">AI-Powered Assistance</h3>
+          <p class="mt-2 text-gray-600">
+            AI-enhanced plans, motivational nudges, and progress summaries to save time and engage clients better.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
+        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
+          <i class="fas fa-credit-card text-secondary-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Payment Management</h3>
+          <p class="mt-2 text-gray-600">
+            Integrated payments, subscriptions, and automated billing for your training services.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- Pricing Section -->
+ <div class="bg-gray-50 py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Choose Your Plan</h2>
+      <p class="mt-4 text-xl text-gray-600">Start with a free trial, upgrade as you grow</p>
+
+      <!-- Toggle Monthly/Yearly -->
+      <div class="mt-6 flex justify-center items-center space-x-4">
+        <span class="text-gray-500 font-medium">Monthly</span>
+        <button id="pricing-toggle" class="relative inline-flex items-center h-6 rounded-full w-12 bg-primary-500 focus:outline-none">
+          <span class="sr-only">Toggle Monthly/Yearly</span>
+          <span class="transform translate-x-0 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300"></span>
+        </button>
+        <span class="text-gray-500 font-medium">Yearly (20% off)</span>
+      </div>
+    </div>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-1 md:grid-cols-3 lg:max-w-4xl lg:mx-auto xl:max-w-none xl:mx-0">
+
+      <!-- Basic Plan -->
+      <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white hover:shadow-xl transform hover:-translate-y-1 transition duration-200">
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900">Basic</h3>
+          <p class="mt-4 text-sm text-gray-500">Perfect for new trainers getting started</p>
+          <p class="mt-8">
+            <span class="text-3xl font-extrabold text-gray-900" id="basic-price">ETB. 2,000</span>
+            <span class="text-base font-medium text-gray-500" id="basic-duration">/month</span>
+          </p>
+          <div class="mt-4 space-y-1">
+            <p class="text-sm text-gray-500">3 months: ETB. 5,700 <span class="text-green-600 font-semibold">(save 5%)</span></p>
+            <p class="text-sm text-gray-500">6 months: ETB. 10,800 <span class="text-green-600 font-semibold">(save 10%)</span></p>
+          </div>
+          <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-gray-800 hover:bg-gray-900 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
+            Start Free Trial
+          </a>
+        </div>
+        <div class="pt-6 pb-8 px-6">
+          <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">What's included</h4>
+          <ul class="mt-6 space-y-4">
+            <li class="flex space-x-3"><i class="fas fa-user-friends h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 10 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-dumbbell h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Basic workout & meal plans</span></li>
+            <li class="flex space-x-3"><i class="fas fa-chart-line h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Progress tracking</span></li>
+            <li class="flex space-x-3"><i class="fas fa-credit-card h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Payment management</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Pro Plan -->
+      <div class="border border-primary-600 rounded-lg shadow-sm divide-y divide-gray-200 bg-white relative hover:shadow-2xl transform hover:-translate-y-1 transition duration-200">
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <span class="inline-flex px-4 py-1 rounded-full text-sm font-semibold bg-secondary-600 text-white">Most Popular</span>
+        </div>
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900">Pro</h3>
+          <p class="mt-4 text-sm text-gray-500">For established trainers ready to scale</p>
+          <p class="mt-8">
+            <span class="text-3xl font-extrabold text-primary-600" id="pro-price">ETB. 3,000</span>
+            <span class="text-base font-medium text-gray-500" id="pro-duration">/month</span>
+          </p>
+          <div class="mt-4 space-y-1">
+            <p class="text-sm text-gray-500">3 months: ETB. 8,550 <span class="text-green-600 font-semibold">(save 5%)</span></p>
+            <p class="text-sm text-gray-500">6 months: ETB. 16,200 <span class="text-green-600 font-semibold">(save 10%)</span></p>
+          </div>
+          <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-primary-600 hover:opacity-90 border border-primary-600 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
+            Start Free Trial
+          </a>
+        </div>
+        <div class="pt-6 pb-8 px-6">
+          <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">Everything in Basic, plus</h4>
+          <ul class="mt-6 space-y-4">
+            <li class="flex space-x-3"><i class="fas fa-user-friends h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 50 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-robot h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">AI-powered features</span></li>
+            <li class="flex space-x-3"><i class="fas fa-palette h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Custom branding</span></li>
+            <li class="flex space-x-3"><i class="fas fa-chart-pie h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Advanced analytics</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Enterprise Plan -->
+      <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white hover:shadow-xl transform hover:-translate-y-1 transition duration-200">
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900">Enterprise</h3>
+          <p class="mt-4 text-sm text-gray-500">For fitness businesses and gym chains</p>
+          <p class="mt-8">
+            <span class="text-3xl font-extrabold" id="enterprise-price">ETB. 7,000</span>
+            <span class="text-base font-medium text-gray-500" id="enterprise-duration">/month</span>
+          </p>
+          <div class="mt-4 space-y-1">
+            <p class="text-sm text-gray-500">3 months: ETB. 19,950 <span class="text-green-600 font-semibold">(save 5%)</span></p>
+            <p class="text-sm text-gray-500">6 months: ETB. 37,800 <span class="text-green-600 font-semibold">(save 10%)</span></p>
+          </div>
+          <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-gray-800 hover:bg-gray-900 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
+            Start Free Trial
+          </a>
+        </div>
+        <div class="pt-6 pb-8 px-6">
+          <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">Everything in Pro, plus</h4>
+          <ul class="mt-6 space-y-4">
+            <li class="flex space-x-3"><i class="fas fa-users h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 200 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-user-tie h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Multi-trainer management</span></li>
+            <li class="flex space-x-3"><i class="fas fa-headset h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Priority support</span></li>
+            <li class="flex space-x-3"><i class="fas fa-key h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">API access</span></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle Monthly/Yearly Pricing
+  const toggle = document.getElementById('pricing-toggle');
+  let yearly = false;
+
+  toggle.addEventListener('click', () => {
+    yearly = !yearly;
+
+    document.getElementById('basic-price').textContent = yearly ? 'ETB. 19,200' : 'ETB. 2,000';
+    document.getElementById('basic-duration').textContent = yearly ? '/year' : '/month';
+
+    document.getElementById('pro-price').textContent = yearly ? 'ETB. 28,800' : 'ETB. 3,000';
+    document.getElementById('pro-duration').textContent = yearly ? '/year' : '/month';
+
+    document.getElementById('enterprise-price').textContent = yearly ? 'ETB. 67,200' : 'ETB. 7,000';
+    document.getElementById('enterprise-duration').textContent = yearly ? '/year' : '/month';
+  });
+</script>
+
+
+
+
+
+<!-- CTA Section -->
+<div class="bg-gradient-to-r from-primary-600 to-primary-700">
+  <div class="max-w-7xl mx-auto text-center py-20 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-4xl font-extrabold text-white sm:text-5xl">
+      <span class="block">Ready to transform your</span>
+      <span class="block">fitness business?</span>
+    </h2>
+    <p class="mt-6 text-lg text-primary-100 sm:text-xl sm:leading-8 max-w-2xl mx-auto">
+      Join hundreds of Ethiopian fitness trainers already growing their business and helping clients achieve their fitness goals.
+    </p>
+    <div class="mt-10 flex justify-center">
+      <a href="{% url 'accounts:register' %}" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-semibold rounded-lg text-primary bg-white hover:bg-gray-100 shadow-lg transition duration-300 transform hover:-translate-y-1">
+        Start Your Free Trial
+        <svg class="ml-3 h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+<style>
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+  .animate-float-slow { animation: float 6s ease-in-out infinite; }
+
+  /* Rotation animation */
+  @keyframes rotate-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .animate-rotate-slow { animation: rotate-slow 60s linear infinite; }
+  .animate-rotate-slow-reverse { animation: rotate-slow 60s linear infinite reverse; }
+</style>
+
+<script>
+  // Fade-in / slide-up
+  const heroSection = document.querySelector("#hero");
+  const fadeEls = heroSection.querySelectorAll(".hero-fade");
+  
+
+  const fadeObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("opacity-100", "translate-y-0");
+        fadeObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  fadeEls.forEach(el => {
+    el.classList.add("opacity-0", "translate-y-6", "transition-all", "duration-700");
+    fadeObserver.observe(el);
+  });
+
+  // Counter-up numbers
+  const counters = heroSection.querySelectorAll(".hero-counter");
+  const speed = 100;
+
+  const runCounter = (counter) => {
+    const targetText = counter.innerText.trim();
+    const target = parseInt(targetText);
+    const suffix = targetText.replace(/[0-9]/g,"");
+
+    const update = () => {
+      let count = parseInt(counter.innerText) || 0;
+      const inc = Math.ceil(target / speed);
+      if(count < target){
+        counter.innerText = count + inc + suffix;
+        requestAnimationFrame(update);
+      } else {
+        counter.innerText = target + suffix;
+      }
+    }
+    update();
+  }
+
+  const counterObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting && !entry.target.classList.contains("counted")){
+        entry.target.classList.add("counted");
+        runCounter(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+
+  counters.forEach(c => counterObserver.observe(c));
+</script>
+
+{% endblock %}

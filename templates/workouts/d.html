@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Create Workout Plan</h1>
+
+<form method="post" id="workout-form" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Regular form fields -->
+    {% for field in form %}
+        {% if field.name != 'workout_structure' %}
+            <div class="flex flex-col">
+                <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+                {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+                {% if field.errors %}
+                    <p class="text-sm text-warning-700 mt-1">{{ field.errors|join:", " }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="text-sm text-primary-500 mt-1">{{ field.help_text }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Workout Builder -->
+    <div id="workout-builder" class="space-y-6" 
+         {% if form.instance.workout_structure %}data-workout="{{ form.instance.workout_structure|escapejs }}"{% endif %}>
+        <div id="days-container" class="space-y-4"></div>
+        <button type="button" id="add-day-btn" 
+                class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-4 py-2 rounded-xl font-semibold shadow hover:scale-105 transition transform">
+            + Add Day
+        </button>
+    </div>
+
+    <!-- Hidden input for JSON -->
+    <input type="hidden" name="workout_structure" id="id_workout_structure">
+
+    <!-- AI Buttons -->
+    <div class="flex items-center space-x-2 mt-2">
+        <button type="button" id="generate-ai-btn" 
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+            Generate AI Workout Plan
+        </button>
+        <button type="button" id="regenerate-ai-btn" 
+                class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition hidden">
+            Regenerate AI Plan
+        </button>
+        <span id="ai-loading" class="hidden text-sm text-gray-500">Generating...</span>
+    </div>
+
+    <!-- AI Preview / Editable -->
+    <div id="ai-preview" class="mt-4 p-4 bg-gray-100 rounded shadow space-y-4"></div>
+
+    <!-- Submit Button -->
+    <button type="submit" 
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition mt-4">
+        Save Workout
+    </button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('workout-form');
+    const preview = document.getElementById('ai-preview');
+    const loading = document.getElementById('ai-loading');
+    const regenerateBtn = document.getElementById('regenerate-ai-btn');
+
+ const renderWorkoutPreview = (workoutStructure) => {
+    preview.innerHTML = '';
+
+    // workoutStructure is now an array of day objects
+    workoutStructure.forEach(dayObj => {
+        const dayCard = document.createElement('div');
+        dayCard.classList.add('bg-white', 'p-3', 'rounded', 'shadow');
+
+        const dayHeader = document.createElement('h3');
+        dayHeader.classList.add('font-bold', 'mb-2');
+        dayHeader.textContent = dayObj.day;
+        dayCard.appendChild(dayHeader);
+
+        const ul = document.createElement('ul');
+        dayObj.exercises.forEach(ex => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <input type="text" value="${ex.name}" class="border rounded px-2 py-1 w-36 mr-2">
+                <input type="number" value="${ex.sets}" class="border rounded px-2 py-1 w-16 mr-2" min="1">
+                x
+                <input type="number" value="${ex.reps}" class="border rounded px-2 py-1 w-16 ml-2" min="1">
+            `;
+            ul.appendChild(li);
+        });
+        dayCard.appendChild(ul);
+        preview.appendChild(dayCard);
+    });
+};
+    const generateAIWorkout = async () => {
+        const data = {
+            difficulty: form.querySelector('select[name="difficulty"]').value,
+            duration_weeks: parseInt(form.querySelector('input[name="duration_weeks"]').value) || 1,
+            goal: form.querySelector('select[name="goal"]').value,
+            days_per_week: parseInt(form.querySelector('input[name="days_per_week"]').value) || 1,
+            include_warmup_cooldown: form.querySelector('input[name="include_warmup_cooldown"]').checked
+        };
+
+        loading.classList.remove('hidden');
+        try {
+            const response = await fetch("{% url 'ai_services:generate_ai_workout' %}", {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') // Optional if CSRF exempted
+    },
+    body: JSON.stringify(data)
+});
+            const result = await response.json();
+
+            if (result.workout_structure) {
+                form.querySelector('#id_workout_structure').value = JSON.stringify(result.workout_structure);
+                renderWorkoutPreview(result.workout_structure);
+                regenerateBtn.classList.remove('hidden'); // Show regenerate button
+            } else if (result.error) {
+                alert('Error: ' + result.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to generate AI workout.');
+        } finally {
+            loading.classList.add('hidden');
+        }
+    };
+
+    document.getElementById('generate-ai-btn').addEventListener('click', generateAIWorkout);
+    regenerateBtn.addEventListener('click', generateAIWorkout);
+
+    // Update hidden input before form submission
+    form.addEventListener('submit', () => {
+        const workoutData = {};
+        preview.querySelectorAll('div').forEach(dayCard => {
+            const dayName = dayCard.querySelector('h3').textContent;
+            workoutData[dayName] = [];
+            dayCard.querySelectorAll('li').forEach(li => {
+                const inputs = li.querySelectorAll('input');
+                workoutData[dayName].push({
+                    exercise: inputs[0].value,
+                    sets: parseInt(inputs[1].value),
+                    reps: parseInt(inputs[2].value)
+                });
+            });
+        });
+        form.querySelector('#id_workout_structure').value = JSON.stringify(workoutData);
+    });
+});
+</script>
+{% endblock %}

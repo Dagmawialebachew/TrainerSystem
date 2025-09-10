@@ -1,0 +1,514 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Dashboard – {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-10 px-2 md:px-0">
+
+  <!-- Header -->
+  <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 
+              sm:flex-row sm:items-center sm:justify-between overflow-hidden bg-white/80 backdrop-blur">
+    <div class="z-10">
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-2">
+        <i class="fas fa-user text-primary-400"></i>
+        Welcome back, {{ client_profile.user.first_name }}!
+      </h1>
+      <p class="text-gray-500 text-base sm:text-lg mt-1">
+        Goal: {{ client_profile.get_fitness_goal_display }}
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 z-10">
+      <a href="{% url 'clients:profile' %}"
+         class="inline-flex items-center px-5 py-2 bg-primary text-white text-sm font-semibold 
+                rounded-2xl shadow hover:bg-primary-dark transition">
+        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 11 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+        Edit Profile
+      </a>
+      <a href="{% url 'progress:add_progress' %}"
+         class="inline-flex items-center px-5 py-2 bg-white/90 text-primary text-sm font-semibold 
+                rounded-2xl shadow hover:bg-white transition">
+        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v16m8-8H4"/>
+        </svg>
+        Log Progress
+      </a>
+    </div>
+
+    <!-- Background Flair -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute -top-16 -right-32 w-96 h-96 bg-primary-100/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 w-48 h-48 bg-primary-50/10 rounded-full blur-2xl"></div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    {% for card in stats_cards %}
+      <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between 
+                  hover:shadow-lg transition">
+        <!-- Text -->
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">{{ card.title }}</h3>
+          <p class="text-2xl font-bold text-gray-900">{{ card.value }}</p>
+        </div>
+        <!-- Icon -->
+        <div class="{{ card.color }} p-3 rounded-full">
+          <i class="fas fa-{{ card.icon }} text-white text-xl"></i>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+     <div class="flex items-center space-x-4 my-6">
+        <span class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-200 to-transparent"></span>
+        <span class="text-primary-400 text-sm font-semibold tracking-widest uppercase">Activity</span>
+        <span class="flex-1 h-px bg-gradient-to-l from-transparent via-primary-200 to-transparent"></span>
+    </div>
+    <!-- Today's Progress -->
+<div class="bg-white/70 backdrop-blur-xl rounded-2xl shadow-lg p-8 border border-gray-200">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Today's Progress</h2>
+    <i class="fas fa-bolt text-primary-600 text-xl"></i>
+  </div>
+
+  {% if today_progress %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Workout Card -->
+      <div class="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
+        <div class="p-3 rounded-full bg-gradient-to-tr from-primary-500 to-primary-300 text-white shadow">
+          <i class="fas fa-dumbbell fa-lg"></i>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-600">Workout</p>
+          {% if today_progress.workout_completed %}
+            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+              <i class="fas fa-check-circle mr-1"></i> Completed
+            </span>
+          {% else %}
+            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
+              <i class="fas fa-hourglass-half mr-1"></i> Pending
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Meal Plan Card -->
+      <div class="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
+        <div class="p-3 rounded-full bg-gradient-to-tr from-pink-500 to-red-400 text-white shadow">
+          <i class="fas fa-utensils fa-lg"></i>
+        </div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-600">Meal Plan</p>
+          {% if today_progress.meal_plan_followed %}
+            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+              <i class="fas fa-check-circle mr-1"></i> Followed
+            </span>
+          {% else %}
+            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
+              <i class="fas fa-hourglass-half mr-1"></i> Pending
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  {% else %}
+    <!-- No Progress State -->
+    <div class="text-center py-14">
+      <i class="fas fa-calendar-times fa-4x text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-base mb-6">No progress logged for today</p>
+      <a href="{% url 'progress:add_progress' %}"
+         class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-full text-sm font-semibold shadow hover:bg-primary-dark transition">
+        <i class="fas fa-plus-circle"></i> Log Today's Progress
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+=
+<!-- 🧩 Unified Active Plans Grid -->
+<div class="max-w-7xl mx-auto px-4 lg:px-6 py-10 space-y-10">
+
+ <!-- 🔷 Section Divider -->
+<div class="flex items-center space-x-4 my-6">
+  <span class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-200 to-transparent"></span>
+  <span class="text-primary-400 text-sm font-semibold tracking-widest uppercase">Active Plans & Motivation</span>
+  <span class="flex-1 h-px bg-gradient-to-l from-transparent via-primary-200 to-transparent"></span>
+</div>
+
+<!-- 🧩 Unified Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- Workout Plan -->
+<div class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 shadow-lg hover:shadow-xl transition">
+  <!-- Header -->
+  <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+    <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+      <i class="fas fa-dumbbell text-primary-500"></i> Workout Plan
+    </h3>
+    {% if active_workout_plan %}
+    <a href="{% url 'clients:workout_plan' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View →</a>
+    {% endif %}
+  </div>
+
+  <!-- Content -->
+  <div class="p-6 space-y-4">
+    {% if active_workout_plan %}
+      <!-- Title & Description -->
+      <div>
+        <h4 class="text-base font-semibold text-gray-900">{{ active_workout_plan.title }}</h4>
+        <p class="text-sm text-gray-600 mt-1">{{ active_workout_plan.description|default:"No description provided." }}</p>
+      </div>
+
+      <!-- Tags & Metadata -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+          {{ active_workout_plan.get_difficulty_display }}
+        </span>
+        <div class="space-y-1 text-sm text-gray-600">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar-alt text-primary-500"></i>
+            <span>Duration:</span>
+            <span class="font-medium text-gray-800">{{ plan.duration_weeks }} week{% if plan.duration_weeks > 1 %}s{% endif %}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-bolt text-yellow-500"></i>
+            <span>Intensity:</span>
+            <span class="font-medium text-gray-800">{{ active_workout_plan.get_difficulty_display }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Structure Preview -->
+      {% if active_workout_plan.workout_structure %}
+      <div class="pt-4 border-t border-gray-100 text-sm text-primary-700">
+        <p class="font-semibold mb-2 flex items-center gap-2">
+          <i class="fas fa-stream"></i> Structure Preview
+        </p>
+        <ul class="list-disc list-inside text-xs space-y-1">
+          {% for block in active_workout_plan.workout_structure|slice:":2" %}
+            <li>{{ block.day }} – {{ block.exercises|length }} exercise{% if block.exercises|length > 1 %}s{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% if active_workout_plan.workout_structure|length > 2 %}
+        <p class="mt-2 text-xs text-gray-400">+ {{ active_workout_plan.workout_structure|length|add:"-2" }} more days</p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="text-center py-8 text-gray-500">
+        <i class="fas fa-running fa-2x mb-3 text-gray-400"></i>
+        <p class="font-medium">No active workout plan</p>
+        <p class="text-xs text-gray-400">Your trainer will create one soon</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+
+  <!-- Meal Plan -->
+  <div class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 shadow-lg hover:shadow-xl transition">
+    <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+        <i class="fas fa-utensils text-orange-500"></i> Meal Plan
+      </h3>
+      {% if active_meal_plan %}
+      <a href="{% url 'clients:meal_plan' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View →</a>
+      {% endif %}
+    </div>
+    <div class="p-6">
+      {% if active_meal_plan %}
+        <h4 class="text-base font-semibold text-gray-900">{{ active_meal_plan.title }}</h4>
+        <p class="text-sm text-gray-600 mt-1">{{ active_meal_plan.description|truncatewords:20 }}</p>
+        <div class="mt-4 flex items-center justify-between">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
+            {{ active_meal_plan.get_meal_type_display }}
+          </span>
+        </div>
+      {% else %}
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-apple-alt fa-2x mb-3 text-gray-400"></i>
+          <p>No active meal plan</p>
+          <p class="text-xs text-gray-400">Your trainer will create one soon</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+<section id="workout-summary" class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 shadow-lg hover:shadow-xl transition">
+  <!-- Header -->
+  <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+    <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+      <i class="fas fa-dumbbell text-primary-500"></i>
+      Workout Summary
+    </h3>
+    <span class="text-sm text-primary-400 font-medium" title="This feature is still being developed">
+      Schedule (in progress)
+    </span>
+  </div>
+
+  <!-- Body -->
+  <div class="p-6 flex items-center justify-between max-md:flex-col gap-5 text-sm text-gray-700">
+
+    <!-- 🟡 Today’s Sessions -->
+    <div>
+      <h4 class="text-base font-semibold text-gray-800 flex items-center gap-2 mb-2">
+        <i class="fas fa-sun text-yellow-500"></i> Today’s Sessions
+      </h4>
+      <div id="today-sessions-list" class="space-y-3">
+        <p class="text-gray-500" id="today-placeholder">Loading today’s sessions…</p>
+      </div>
+    </div>
+
+    <!-- 🔵 Next Workout Session -->
+    <div class="border-t border-gray-100">
+      <h4 class="text-base font-semibold text-gray-800 flex items-center gap-2 mb-2">
+        <i class="fas fa-rocket text-indigo-500"></i> Next Workout
+      </h4>
+      <div class="text-sm space-y-2 text-left">
+        <p class="text-lg font-semibold text-gray-900" id="next-title">Loading…</p>
+        <p class="text-sm text-gray-500" id="next-time">—</p>
+        <span
+          id="next-status"
+          class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600"
+        >—</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+  <!-- Streak + Quote -->
+  <div class="rounded-3xl  bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg text-white p-6 flex flex-col justify-between hover:shadow-xl transition">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-fire text-orange-300 text-2xl"></i>
+        <p class="text-lg font-bold">Streak</p>
+      </div>
+      <p class="text-3xl font-extrabold" id="streak-count">{{ streak }}</p>
+    </div>
+    <div class="mt-4">
+      <i class="fas fa-quote-left text-white text-xl mb-2"></i>
+      <p class="text-base font-medium italic" id="daily-quote">"Push yourself, because no one else will do it for you."</p>
+    </div>
+  </div>
+
+</section>
+
+
+</div>
+
+  <!-- 📈 Progress Charts -->
+  
+
+  <!-- 💬 Recent Messages -->
+  {% if recent_messages %}
+  <section class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 shadow-lg">
+    <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+        <i class="fas fa-envelope text-primary-500"></i> Recent Messages
+      </h3>
+      <a href="{% url 'clients:messages' %}" class="text-sm text-primary-600 hover:text-primary-700 font-medium">View all →</a>
+    </div>
+    <div class="divide-y divide-gray-200">
+      {% for message in recent_messages %}
+      <div class="px-6 py-4 flex items-start justify-between">
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-gray-900">{{ message.subject }}</p>
+          <p class="text-sm text-gray-600 mt-1">{{ message.message|truncatewords:25 }}</p>
+          <p class="text-xs text-gray-400 mt-2">{{ message.created_at|timesince }} ago</p>
+        </div>
+        {% if not message.is_read %}
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">New</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  <!-- 📅 Sessions Overview -->
+
+
+<script>
+  // Map status → badge classes
+  const getStatusClasses = status => {
+    return {
+      completed: 'bg-green-100 text-green-700',
+      pending:   'bg-yellow-100 text-yellow-800',
+      missed:    'bg-red-100 text-red-700',
+    }[status] || 'bg-gray-100 text-gray-600';
+  };
+
+  async function loadEngagement() {
+    try {
+      const res = await fetch('/api/schedule/summary/');
+      const { today_sessions, next_event, streak } = await res.json();
+      const streakEl = document.getElementById('streak-count');
+      if(streakEl){
+        streakEl.textContent = streak;
+        console.log('Streak updated to', streak);
+      }
+      // ─── Today’s Sessions ───────────────────────────
+      const listEl = document.getElementById('today-sessions-list');
+      listEl.innerHTML = '';
+      if (today_sessions && today_sessions.length) {
+        today_sessions.forEach(session => {
+          // session header + time range
+          const container = document.createElement('div');
+          container.className = 'space-y-1';
+
+          const hdr = document.createElement('p');
+          hdr.className = 'font-medium text-gray-900';
+          hdr.textContent = session.title;
+          container.appendChild(hdr);
+
+          const range = document.createElement('p');
+          range.className = 'text-gray-600';
+          range.textContent = `${session.session_start} – ${session.session_end}`;
+          container.appendChild(range);
+
+          // timeblocks statuses
+          session.timeblocks.forEach(tb => {
+            const badge = document.createElement('span');
+            badge.className = 
+              'inline-block mr-2 mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ' +
+              getStatusClasses(tb.status);
+            badge.textContent = tb.start_time + ' ' + tb.status;
+            container.appendChild(badge);
+          });
+
+          listEl.appendChild(container);
+        });
+      } else {
+        const noEl = document.createElement('p');
+        noEl.className = 'text-gray-500';
+        noEl.textContent = 'No sessions scheduled for today.';
+        listEl.appendChild(noEl);
+      }
+
+      // ─── Next Workout ───────────────────────────────
+      const titleEl = document.getElementById('next-title');
+      const timeEl  = document.getElementById('next-time');
+      const badgeEl = document.getElementById('next-status');
+      
+
+      if (next_event) {
+        titleEl.textContent = next_event.title;
+        timeEl.textContent = `${next_event.session_start} – ${next_event.session_end}`;
+
+        const tb = next_event.timeblocks[0] || {};
+        const sts = tb.status || 'unknown';
+        badgeEl.textContent = sts.charAt(0).toUpperCase() + sts.slice(1);
+        badgeEl.className = 
+          'inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ' +
+          getStatusClasses(sts);
+      } else {
+        titleEl.textContent = 'No upcoming session';
+        timeEl.textContent  = '—';
+        badgeEl.textContent = '—';
+        badgeEl.className   = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600';
+      }
+
+    } catch (err) {
+      console.error('Failed to load sessions summary:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadEngagement);
+</script>
+
+
+
+  <!-- 🔥 Streak + 💬 Quote + 🗓️ Next Workout -->
+
+
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white/80 backdrop-blur rounded-3xl shadow-lg p-6 hover:shadow-xl transition">
+      <h3 class="text-xl font-bold text-primary-900 mb-3 flex items-center gap-2">
+        <i class="fas fa-weight text-primary-500"></i> Weight Progress
+      </h3>
+      <canvas id="weightChart" height="150"></canvas>
+    </div>
+    <div class="bg-white/80 backdrop-blur rounded-3xl shadow-lg p-6 hover:shadow-xl transition">
+      <h3 class="text-xl font-bold text-primary-900 mb-3 flex items-center gap-2">
+        <i class="fas fa-chart-line text-primary-500"></i> Workout Progress
+      </h3>
+      <canvas id="workoutChart" height="150"></canvas>
+    </div>
+  </section>
+</div>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const weightLabels = [{% for progress in recent_progress %}'{{ progress.date }}',{% endfor %}];
+  const weightData = [{% for progress in recent_progress %}{{ progress.current_weight|default:0 }},{% endfor %}];
+  renderWeightChart('weightChart', weightLabels, weightData);
+});
+</script>
+<script>
+  const ctx = document.getElementById('workoutChart').getContext('2d');
+  const workoutChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [
+       
+        {
+          label: "Sleep Hours",
+          data: {{ chart_sleep|safe }},
+          backgroundColor: "#38bdf8",
+          yAxisID: 'y1'
+        },
+        {
+          label: "Energy Level (1-5)",
+          data: {{ chart_energy|safe }},
+          backgroundColor: "#f59e0b",
+          yAxisID: 'y1'
+        },
+        {
+          label: "Stress Level (1-5)",
+          data: {{ chart_stress|safe }},
+          backgroundColor: "#ef4444",
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      stacked: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: { display: true, text: 'Adherence & Weight' }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Sleep / Energy / Stress' }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}

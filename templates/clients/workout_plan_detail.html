@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ workout_plan.title }} · {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-primary-50/60 via-white to-primary-100/80 py-12">
+  <div class="max-w-6xl mx-auto px-4 space-y-10">
+
+    <!-- Page Header -->
+    <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 
+                sm:flex-row sm:items-center sm:justify-between overflow-hidden bg-white/30 backdrop-blur-md shadow-2xl">
+
+      <div class="z-10">
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-3">
+          <i class="fas fa-dumbbell text-primary-400"></i> {{ workout_plan.title }}
+        </h1>
+        <p class="text-gray-500 text-base sm:text-lg mt-1">
+          Weekly workout plan with sets, reps, and intensity overview.
+        </p>
+      </div>
+
+      <a href="{% url 'clients:workout_plan' %}" 
+         class="inline-flex items-center gap-2 bg-primary-600 text-white px-5 py-2 rounded-2xl shadow hover:bg-primary-700 transition">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+
+    <!-- Plan Info Card -->
+    <div class="bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-user-tie text-primary"></i>
+        <span class="font-medium">Trainer:</span>
+        <span>{{ workout_plan.trainer.user.get_full_name }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-calendar-alt text-primary"></i>
+        <span class="font-medium">Duration:</span>
+        <span>{{ workout_plan.duration_weeks }} wk</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-bolt text-primary"></i>
+        <span class="font-medium">Intensity:</span>
+        <span>{{ workout_plan.get_difficulty_display }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-check-circle text-green-500"></i>
+        <span class="font-medium">Status:</span>
+        {% if workout_plan.is_active %}
+          <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+        {% else %}
+          <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-sm">Inactive</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Weekly Accordion -->
+    <div class="space-y-4">
+      {% for block in workout_structure %}
+      <div id="day-{{ block.day }}" class="bg-white/30 backdrop-blur-md rounded-3xl shadow-lg p-6 transition transform hover:scale-105">
+
+        <!-- Header -->
+        <button type="button" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/20 hover:bg-white/30 transition"
+                onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90');">
+          <h2 class="font-bold text-primary-600 flex items-center gap-2">
+            <i class="fas fa-calendar-day text-primary-400 transition-transform duration-300"></i>
+            Day {{ block.day }}
+          </h2>
+          <i class="fas fa-chevron-right text-gray-500 transition-transform duration-300 {% if current_day == block.day %}rotate-90{% endif %}"></i>
+        </button>
+
+        <!-- Collapsible Panel -->
+        <div class="space-y-4 {% if current_day != block.day %}hidden{% endif %}">
+          {% if block.exercises %}
+          <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+            {% for ex in block.exercises %}
+            <li class="flex flex-col justify-between rounded-2xl bg-white/70 backdrop-blur-md p-4 shadow-sm hover:shadow-md transition transform hover:scale-105">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fas fa-dumbbell text-primary-400"></i>
+                <span class="font-medium text-gray-700">{{ ex.name }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm text-gray-600">
+                <span>Sets: {{ ex.sets }}</span>
+                <span>Reps: {{ ex.reps }}</span>
+              </div>
+              <div class="mt-2 flex gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                  <i class="fas fa-bolt animate-pulse"></i> Effort: {{ ex.intensity|default:"N/A" }}
+                </span>
+                {% if ex.calories %}
+                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                  <i class="fas fa-fire animate-pulse"></i> Calories: {{ ex.calories }}
+                </span>
+                {% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+            <p class="text-gray-400 italic mt-2">No exercises added for this day.</p>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Start Workout CTA -->
+    <div class="sticky bottom-6 mt-6">
+      <button
+        onclick="alert('Workout experience coming soon! Videos, timers, and tracking 💪')"
+        class="w-full bg-primary text-white py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-primary-dark transition">
+        <i class="fas fa-play mr-2"></i> Start Workout
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Scroll to current day
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentDayElement = document.getElementById("day-{{ current_day }}");
+    if (currentDayElement) {
+      currentDayElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+</script>
+
+{% endblock %}

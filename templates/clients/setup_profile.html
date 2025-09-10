@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Setup Your Profile - {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Header: Stepper + Title -->
+      <div class="relative px-6 py-6 sm:px-8 sm:py-8 bg-gradient-to-r from-primary-50 to-white">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-primary-900 flex items-center gap-3">
+              <span>Complete your profile</span>
+            </h1>
+            <p class="text-sm text-gray-600 mt-1">A few quick questions to personalize your program.</p>
+          </div>
+
+          <!-- Compact stepper -->
+          <!-- Compact stepper -->
+<div class="flex items-center gap-3">
+  <div class="hidden sm:flex items-center gap-3">
+    {% comment %} step_titles must be provided by the view (list of strings) {% endcomment %}
+    {% for title in step_titles %}
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-200 step-bullet" data-step="{{ forloop.counter0 }}">
+          {{ forloop.counter }}
+        </div>
+        <div class="text-sm text-gray-500 hidden md:block step-title" data-step="{{ forloop.counter0 }}">{{ title }}</div>
+      </div>
+      {% if not forloop.last %}
+        <div class="w-8 h-px bg-gray-200 mx-2"></div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+
+        <!-- Progress bar -->
+        <div class="mt-6">
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-2 bg-primary transition-all" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 sm:p-8">
+        {% if form.non_field_errors %}
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
+          <ul class="list-disc pl-5">
+            {% for e in form.non_field_errors %}
+            <li>{{ e }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <form id="multiStepForm" method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- STEP 1: Trainer selection -->
+          <section class="step" data-step="0">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Choose a Trainer</h2>
+            <p class="text-sm text-gray-500 mb-4">Pick a trainer to assign for your program (you can change later).</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {% for trainer in trainers %}
+                {% comment %} Use form.trainer.html_name so POST binds correctly {% endcomment %}
+                <label class="relative cursor-pointer block rounded-xl border bg-white hover:shadow-lg transition-shadow duration-150 focus-within:ring-2 focus-within:ring-primary-300 {% if form.trainer.value|stringformat:"s" == trainer.id|stringformat:"s" %}border-primary-500 ring-2 ring-primary-100{% else %}border-gray-200{% endif %}">
+                  <input
+                    type="radio"
+                    name="{{ form.trainer.html_name }}"
+                    value="{{ trainer.id }}"
+                    class="sr-only peer"
+                    {% if form.trainer.value|stringformat:"s" == trainer.id|stringformat:"s" %}checked{% endif %}>
+                  <div class="p-4 flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                      {% if trainer.user.profile_picture %}
+                        <img src="{{ trainer.user.profile_picture.url }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                      {% else %}
+                        <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold">
+                          {{ trainer.user.first_name.0 }}{{ trainer.user.last_name.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <div class="text-sm font-semibold text-gray-900">{{ trainer.user.get_full_name }}</div>
+                          <div class="text-xs text-gray-500">{{ trainer.certifications|default_if_none:"—"|join:", " }}</div>
+                        </div>
+                        <div class="text-xs text-gray-400">{{ trainer.experience_years }} yrs</div>
+                      </div>
+                      <div class="mt-2 text-sm text-gray-600">{{ trainer.bio|truncatechars:120 }}</div>
+                    </div>
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+
+            {% if form.trainer.errors %}
+            <p class="text-sm text-red-500 mt-3">{{ form.trainer.errors.0 }}</p>
+            {% endif %}
+
+            <div class="mt-6 flex justify-end">
+              <button type="button" data-next class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-white font-semibold shadow hover:bg-primary-700 transition">
+                Next <i class="fas fa-arrow-right text-sm"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- STEP 2: Fitness Info (render most fields except trainer/preferences) -->
+          <section class="step hidden" data-step="1">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Fitness Info</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {% for field in form %}
+                {% if field.name != 'trainer' and field.name != 'preferred_workout_days' and field.name != 'workout_duration_preference' %}
+                  <div class="flex flex-col">
+                    <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+                    {{ field|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-sm" }}
+                    {% if field.help_text %}
+                      <p class="text-xs text-gray-400 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                      <p class="text-xs text-red-500 mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <div class="mt-6 flex justify-between">
+              <button type="button" data-prev class="px-5 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition">Previous</button>
+              <button type="button" data-next class="px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-700 transition">Next</button>
+            </div>
+          </section>
+
+          <!-- STEP 3: Preferences & Goals -->
+          <section class="step hidden" data-step="2">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Preferences & Goals</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <!-- Preferred workout days: render as toggle pills (checkboxes) -->
+              <div>
+                <label class="text-sm font-medium text-gray-700 mb-2 block">{{ form.preferred_workout_days.label }}</label>
+                <div class="flex flex-wrap gap-2">
+                  {% for choice in form.preferred_workout_days %}
+                    {# choice.tag renders the <input> element #}
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      {{ choice.tag }}
+                      <span
+                        class="ml-2 inline-flex items-center px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-700 transition peer-checked:bg-primary-600 peer-checked:text-white peer-checked:border-primary-600">
+                        {{ choice.choice_label }}
+                      </span>
+                    </label>
+                  {% endfor %}
+                </div>
+                {% if form.preferred_workout_days.help_text %}
+                  <p class="text-xs text-gray-400 mt-2">{{ form.preferred_workout_days.help_text }}</p>
+                {% endif %}
+                {% if form.preferred_workout_days.errors %}
+                  <p class="text-xs text-red-500 mt-2">{{ form.preferred_workout_days.errors.0 }}</p>
+                {% endif %}
+              </div>
+
+              <!-- Workout duration preference -->
+              <div>
+                <label for="{{ form.workout_duration_preference.id_for_label }}" class="text-sm font-medium text-gray-700 mb-1 block">{{ form.workout_duration_preference.label }}</label>
+                {{ form.workout_duration_preference|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-sm" }}
+                {% if form.workout_duration_preference.errors %}
+                  <p class="text-xs text-red-500 mt-1">{{ form.workout_duration_preference.errors.0 }}</p>
+                {% endif %}
+              </div>
+
+            </div>
+
+            <div class="mt-6 flex justify-between">
+              <button type="button" data-prev class="px-5 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition">Previous</button>
+              <button type="submit" class="px-5 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-primary-700 transition">Complete Setup</button>
+            </div>
+          </section>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS: multi-step behaviour + initial step (from server) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const progressBar = document.getElementById('progress-bar');
+  const nextBtns = document.querySelectorAll('[data-next]');
+  const prevBtns = document.querySelectorAll('[data-prev]');
+  const stepBullets = Array.from(document.querySelectorAll('.step-bullet'));
+  const stepTitles = Array.from(document.querySelectorAll('.step-title'));
+
+  // server provided initial step (integer). Fallback to 0.
+  const initialStep = parseInt("{{ current_step|default:0 }}", 10) || 0;
+  let currentStep = Math.min(Math.max(initialStep, 0), steps.length - 1);
+
+  function showStep(index) {
+    steps.forEach((s, i) => {
+      s.classList.toggle('hidden', i !== index);
+    });
+    // progress
+    const pct = Math.round(((index + 1) / steps.length) * 100);
+    progressBar.style.width = pct + '%';
+
+    // bullets visual
+    stepBullets.forEach(b => b.classList.remove('bg-primary-600', 'text-white', 'bg-gray-200'));
+    for (let i = 0; i <= index; i++) {
+      const b = stepBullets[i];
+      if (b) {
+        b.classList.add('bg-primary-600', 'text-white');
+        b.classList.remove('bg-gray-200');
+      }
+    }
+    stepTitles.forEach(t => {
+      t.classList.toggle('text-primary-700', parseInt(t.dataset.step, 10) === index);
+    });
+
+    // scroll into view on mobile
+  }
+
+  nextBtns.forEach(btn => btn.addEventListener('click', () => {
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+      showStep(currentStep);
+    }
+  }));
+
+  prevBtns.forEach(btn => btn.addEventListener('click', () => {
+    if (currentStep > 0) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  }));
+
+  // Make the pill checkboxes respond visually when clicking the visible label
+  document.querySelectorAll('label.inline-flex input[type="checkbox"], label.inline-flex input[type="radio"]').forEach(i => {
+    i.addEventListener('change', () => {
+      // nothing special here; CSS peer handles visual state
+    });
+  });
+
+  // Initialize
+  showStep(currentStep);
+});
+</script>
+
+<!-- Tiny CSS tweak so choice.tag (input) can be used with peer styles -->
+<style>
+/* ensure our input (choice.tag) is styled as peer */
+label.relative input[type="radio"].peer,
+label.relative input[type="checkbox"].peer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+label.relative .peer:checked + * { /* not used directly but left for clarity */ }
+</style>
+{% endblock %}

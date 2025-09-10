@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Setup Your Trainer Profile — {{ request.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+
+      <!-- Header -->
+      <div class="px-5 py-4 sm:px-6 sm:py-6 bg-gradient-to-r from-primary-50 to-white">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h1 class="text-lg sm:text-2xl font-extrabold text-primary-900 flex items-center gap-3">
+              <span>Setup your trainer profile</span>
+            </h1>
+            <p class="text-sm text-gray-600 mt-1">Organize your profile into sections — quick to fill on mobile, rich preview for desktop.</p>
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <a href="{% url 'trainers:dashboard' %}" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200 text-sm">
+              <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <button id="previewToggle" type="button" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-700 text-sm">
+              <i class="fas fa-eye"></i> Preview
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body: mobile-first layout -->
+      <div class="px-4 py-5 sm:px-6 sm:py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Form column (primary) -->
+        <div class="lg:col-span-2">
+
+          <form id="trainerProfileForm" method="post" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
+                <ul class="list-disc pl-5">
+                  {% for e in form.non_field_errors %}
+                    <li>{{ e }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+
+            <!-- Tabs (visible on md and up) -->
+            <div class="grid grid-cols-2 gap-2 md:grid-cols-4" role="tablist" aria-label="Profile sections">
+              <button type="button" class="section-tab px-3 py-2 rounded-md text-sm font-medium bg-primary-600 text-white" data-section="basic">Basic & Branding</button>
+              <button type="button" class="section-tab px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700" data-section="expertise">Expertise & Services</button>
+              <button type="button" class="section-tab px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700" data-section="experience">Experience & Rates</button>
+              <button type="button" class="section-tab px-3 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700" data-section="contact">Contact & Location</button>
+            </div>
+
+            <!-- SECTION: Basic & Branding -->
+            <section class="section-card border border-gray-100 rounded-xl overflow-hidden">
+              <header class="flex items-center justify-between px-3 py-3 bg-white cursor-pointer md:cursor-auto" data-target="sec-basic">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Basic & Branding</h3>
+                  <p class="text-xs text-gray-500">Business name, bio, logo and brand color</p>
+                </div>
+               
+              </header>
+
+              <div id="sec-basic" class="section-body px-3 pb-4 hidden md:block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}</label>
+                    {{ form.business_name|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-primary-400 text-sm" }}
+                    {% if form.business_name.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.business_name.help_text }}</p>{% endif %}
+                    {% if form.business_name.errors %}<p class="text-xs text-red-500 mt-1">{{ form.business_name.errors.0 }}</p>{% endif %}
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.hourly_rate.id_for_label }}">{{ form.hourly_rate.label }} (Br.)</label>
+                    {{ form.hourly_rate|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.hourly_rate.errors %}<p class="text-xs text-red-500 mt-1">{{ form.hourly_rate.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
+                  {{ form.bio|add_class:"w-full px-4 py-3 rounded-lg border border-gray-200 text-sm" }}
+                  {% if form.bio.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.bio.help_text }}</p>{% endif %}
+                  {% if form.bio.errors %}<p class="text-xs text-red-500 mt-1">{{ form.bio.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+  <!-- Logo input -->
+  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.logo.id_for_label }}">{{ form.logo.label }}</label>
+    {{ form.logo|add_class:"text-sm" }}
+                    {% if form.logo.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.logo.help_text }}</p>{% endif %}
+                    {% if form.logo.errors %}<p class="text-xs text-red-500 mt-1">{{ form.logo.errors.0 }}</p>{% endif %}
+  </div>
+
+  <div class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.brand_color.id_for_label }}">{{ form.brand_color.label }}</label>
+    {{ form.brand_color|add_class:"w-full h-10 p-1 rounded-lg border border-gray-200" }}
+                    {% if form.brand_color.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.brand_color.help_text }}</p>{% endif %}
+                    {% if form.brand_color.errors %}<p class="text-xs text-red-500 mt-1">{{ form.brand_color.errors.0 }}</p>{% endif %}
+  </div>
+</div>
+              </div>
+            </section>
+
+            <!-- SECTION: Expertise & Services -->
+            <section class="section-card border border-gray-100 rounded-xl overflow-hidden">
+              <header class="flex items-center justify-between px-3 py-3 bg-white cursor-pointer md:cursor-auto" data-target="sec-expertise">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Expertise & Services</h3>
+                  <p class="text-xs text-gray-500">Specialties, certifications and services you offer</p>
+                </div>
+               
+              </header>
+
+              <div id="sec-expertise" class="section-body px-3 pb-4 hidden md:block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.specializations.id_for_label }}">{{ form.specializations.label }}</label>
+                    {{ form.specializations|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.specializations.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.specializations.help_text }}</p>{% endif %}
+                    {% if form.specializations.errors %}<p class="text-xs text-red-500 mt-1">{{ form.specializations.errors.0 }}</p>{% endif %}
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.certifications.id_for_label }}">{{ form.certifications.label }}</label>
+                    {{ form.certifications|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.certifications.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.certifications.help_text }}</p>{% endif %}
+                    {% if form.certifications.errors %}<p class="text-xs text-red-500 mt-1">{{ form.certifications.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  {% if form.services_offered %}
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.services_offered.id_for_label }}">{{ form.services_offered.label }}</label>
+                    {{ form.services_offered|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.services_offered.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.services_offered.help_text }}</p>{% endif %}
+                    {% if form.services_offered.errors %}<p class="text-xs text-red-500 mt-1">{{ form.services_offered.errors.0 }}</p>{% endif %}
+                  {% endif %}
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION: Experience & Rates -->
+            <section class="section-card border border-gray-100 rounded-xl overflow-hidden">
+              <header class="flex items-center justify-between px-3 py-3 bg-white cursor-pointer md:cursor-auto" data-target="sec-experience">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Experience & Rates</h3>
+                  <p class="text-xs text-gray-500">Years of experience, hourly rate and availability</p>
+                </div>
+               
+              </header>
+
+              <div id="sec-experience" class="section-body px-3 pb-4 hidden md:block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.experience_years.id_for_label }}">{{ form.experience_years.label }}</label>
+                    {{ form.experience_years|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.experience_years.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.experience_years.help_text }}</p>{% endif %}
+                    {% if form.experience_years.errors %}<p class="text-xs text-red-500 mt-1">{{ form.experience_years.errors.0 }}</p>{% endif %}
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ form.is_accepting_clients.id_for_label }}">{{ form.is_accepting_clients.label }}</label>
+                    <div class="mt-2">{{ form.is_accepting_clients|add_class:"h-5 w-5" }}</div>
+                    {% if form.is_accepting_clients.errors %}<p class="text-xs text-red-500 mt-1">{{ form.is_accepting_clients.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- SECTION: Contact & Location -->
+            <section class="section-card border border-gray-100 rounded-xl overflow-hidden">
+              <header class="flex items-center justify-between px-3 py-3 bg-white cursor-pointer md:cursor-auto" data-target="sec-contact">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Contact & Location</h3>
+                  <p class="text-xs text-gray-500">Address, city and social links</p>
+                </div>
+               
+              </header>
+
+              <div id="sec-contact" class="section-body px-3 pb-4 hidden md:block">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.address.label }}</label>
+                    {{ form.address|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.address.help_text %}<p class="text-xs text-gray-400 mt-1">{{ form.address.help_text }}</p>{% endif %}
+                    {% if form.address.errors %}<p class="text-xs text-red-500 mt-1">{{ form.address.errors.0 }}</p>{% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.city.label }}</label>
+                    {{ form.city|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.city.errors %}<p class="text-xs text-red-500 mt-1">{{ form.city.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label for="{{ form.website.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.website.label }}</label>
+                    {{ form.website|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.website.errors %}<p class="text-xs text-red-500 mt-1">{{ form.website.errors.0 }}</p>{% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.instagram.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.instagram.label }}</label>
+                    {{ form.instagram|add_class:"w-full px-3 py-2 rounded-lg border border-gray-200 text-sm" }}
+                    {% if form.instagram.errors %}<p class="text-xs text-red-500 mt-1">{{ form.instagram.errors.0 }}</p>{% endif %}
+                  </div>
+                </div>
+
+            
+              </div>
+            </section>
+    <div class="mt-4 flex items-center justify-between gap-3">
+                  <a href="{% url 'trainers:dashboard' %}" class="px-4 py-2 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50">Cancel</a>
+                  <button type="submit" class="px-4 py-2 rounded-md bg-primary text-white font-semibold hover:bg-primary-700">Save profile</button>
+                </div>
+          </form>
+        </div>
+
+        <!-- Preview column (hidden on small, visible on large) -->
+        <aside id="profilePreview" class="hidden lg:block lg:col-span-1">
+          <div class="sticky top-6 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+            <div class="flex flex-col items-center gap-3 text-center">
+              <div id="previewLogoWrap" class="w-28 h-28 rounded-xl overflow-hidden bg-gray-50 border border-gray-200 flex items-center justify-center">
+                <div id="previewLogoPlaceholder" class="text-gray-400 font-semibold">No logo</div>
+              </div>
+              <div>
+                <div id="previewBusinessName" class="text-lg font-semibold text-gray-900">{{ request.user.get_full_name }}</div>
+                <div id="previewCity" class="text-sm text-gray-500 mt-1"></div>
+                <div id="previewHeadline" class="text-sm text-gray-400 mt-2"></div>
+              </div>
+            </div>
+
+            <hr class="my-4 border-dashed border-gray-100">
+
+            <div id="previewMeta" class="text-sm text-gray-600 space-y-2">
+              <div><strong class="text-gray-800">Certifications:</strong> <span id="previewCerts" class="text-gray-600"></span></div>
+              <div><strong class="text-gray-800">Experience:</strong> <span id="previewExp" class="text-gray-600"></span></div>
+              <div><strong class="text-gray-800">Specialties:</strong> <span id="previewSpecs" class="text-gray-600"></span></div>
+            </div>
+
+            <div class="mt-4">
+              <a href="#" class="px-4 py-2 rounded-md bg-primary-50 text-primary-700 border border-primary-100 hover:bg-primary-100 text-sm">View public profile</a>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS: small helpers (mobile-first) -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ─── Elements & State ──────────────────────────────────────
+  const tabs           = Array.from(document.querySelectorAll('.section-tab'));
+  const sectionCards   = Array.from(document.querySelectorAll('.section-card'));
+  const toggles        = Array.from(document.querySelectorAll('.toggle-section'));
+  const previewToggle  = document.getElementById('previewToggle');
+  const profilePreview = document.getElementById('profilePreview');
+  const logoInput      = document.querySelector('input[type="file"][name="logo"]');
+  const previewLogoWrap= document.getElementById('previewLogoWrap');
+  const previewLogoPlaceholder = document.getElementById('previewLogoPlaceholder');
+  const colorInput     = document.querySelector('input[name="brand_color"]');
+
+
+  // ─── Helpers ──────────────────────────────────────────────
+  function getTargetId(card) {
+    const header = card.querySelector('header');
+    return header?.dataset?.target || header?.getAttribute('data-target') || null;
+  }
+
+  // ─── Show Only the Active Section ──────────────────────────
+  function showOnlyCard(targetId) {
+    sectionCards.forEach(card => {
+      const body      = card.querySelector('.section-body');
+      const toggleBtn = card.querySelector('.toggle-section');
+      const isTarget  = getTargetId(card) === targetId;
+
+
+        // Desktop/tablet: hide non-target cards entirely
+        if (isTarget) {
+          card.classList.remove('hidden');
+          body.classList.remove('hidden');
+          toggleBtn?.setAttribute('aria-expanded', 'true');
+        } else {
+          card.classList.add('hidden');
+        }
+
+    });
+  }
+
+  // ─── Initialize Active Tab ─────────────────────────────────
+  const initialSection = "{{ current_section_id|default:'' }}";
+  const defaultTarget  = sectionCards.length ? getTargetId(sectionCards[0]) : null;
+  const startId        = initialSection ? 'sec-' + initialSection : defaultTarget;
+  if (startId) showOnlyCard(startId);
+
+  // ─── Tab Click Handlers ───────────────────────────────────
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = 'sec-' + tab.dataset.section;
+      showOnlyCard(targetId);
+    });
+  });
+
+  // ─── Preview Toggle (small-screen) ────────────────────────
+  if (previewToggle && profilePreview) {
+    previewToggle.addEventListener('click', () => {
+      profilePreview.classList.toggle('hidden');
+      if (!profilePreview.classList.contains('hidden')) {
+        profilePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
+
+  // ─── Logo Preview (existing + new upload) ─────────────────
+  {% if form.instance.logo %}
+    const existingLogoUrl = "{{ form.instance.logo.url }}";
+    if (existingLogoUrl && previewLogoWrap) {
+      previewLogoPlaceholder?.remove();
+      previewLogoWrap.innerHTML = `<img src="${existingLogoUrl}" class="w-full h-full object-cover">`;
+    }
+  {% endif %}
+
+  if (logoInput && previewLogoWrap) {
+    logoInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        previewLogoPlaceholder?.remove();
+        previewLogoWrap.innerHTML = `<img src="${ev.target.result}" class="w-full h-full object-cover">`;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ─── Live Text Preview ────────────────────────────────────
+  const previewMap = {
+    business_name:   'previewBusinessName',
+    city:            'previewCity',
+    certifications:  'previewCerts',
+    experience_years:'previewExp',
+    specializations: 'previewSpecs',
+  };
+
+  Object.entries(previewMap).forEach(([field, previewId]) => {
+    const input  = document.querySelector(`[name="${field}"]`);
+    const target = document.getElementById(previewId);
+    if (!input || !target) return;
+
+    const update = () => { target.textContent = input.value || ''; };
+    input.addEventListener('input', update);
+    input.addEventListener('blur', update);
+    update();
+  });
+
+  // ─── Brand Color Live Preview ─────────────────────────────
+  if (colorInput && previewLogoWrap) {
+    colorInput.addEventListener('input', e => {
+      previewLogoWrap.style.backgroundColor = e.target.value || '';
+    });
+  }
+});
+</script>
+
+
+
+
+<style>
+/* small accessibility and visual tweaks */
+.section-card header { -webkit-tap-highlight-color: transparent; }
+.toggle-section svg { transform-origin: center; }
+</style>
+{% endblock %}

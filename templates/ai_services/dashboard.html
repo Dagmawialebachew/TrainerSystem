@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-10">
+  <h1 class="text-4xl font-bold text-center text-gray-800 mb-10">🚀 Additional AI Features</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Workout Plan -->
+    <a href="{% url 'ai_services:ai_workout' %}" class="block p-6 bg-white rounded-lg shadow hover:shadow-xl transition">
+      <div class="flex items-center space-x-3 mb-2">
+        <i class="fas fa-dumbbell text-blue-600 text-2xl"></i>
+        <h2 class="text-xl font-semibold text-blue-700">Workout Plan Generator</h2>
+      </div>
+      <p class="text-gray-600">Personalized routines based on goals, equipment, and schedule.</p>
+    </a>
+
+    <!-- Meal Plan -->
+    <a href="{% url 'ai_services:ai_meal' %}" class="block p-6 bg-white rounded-lg shadow hover:shadow-xl transition">
+      <div class="flex items-center space-x-3 mb-2">
+        <i class="fas fa-utensils text-green-600 text-2xl"></i>
+        <h2 class="text-xl font-semibold text-green-700">Meal Plan Generator</h2>
+      </div>
+      <p class="text-gray-600">Nutrition-focused plans tailored to your dietary needs.</p>
+    </a>
+
+    <!-- Motivation -->
+    <a href="{% url 'ai_services:ai_motivation' %}" class="block p-6 bg-white rounded-lg shadow hover:shadow-xl transition">
+      <div class="flex items-center space-x-3 mb-2">
+        <i class="fas fa-heart text-yellow-500 text-2xl"></i>
+        <h2 class="text-xl font-semibold text-yellow-600">Motivational Message Generator</h2>
+      </div>
+      <p class="text-gray-600">Uplifting messages based on your progress and challenges.</p>
+    </a>
+
+    <!-- Progress Summary -->
+    <a href="{% url 'ai_services:ai_summary' %}" class="block p-6 bg-white rounded-lg shadow hover:shadow-xl transition">
+      <div class="flex items-center space-x-3 mb-2">
+        <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+        <h2 class="text-xl font-semibold text-purple-700">Progress Summary Generator</h2>
+      </div>
+      <p class="text-gray-600">Weekly insights and encouragement from your fitness journey.</p>
+    </a>
+  </div>
+</div>
+{% endblock %}

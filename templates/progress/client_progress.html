@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Container -->
+<div class="max-w-7xl mx-auto px-4 lg:px-6 py-10 space-y-8">
+
+  <!-- Top bar + sticky sub-actions -->
+  <div class="flex items-center justify-between gap-4">
+    <a href="
+    {% if user.is_trainer %}
+    {% url 'progress:list' %}
+    {% elif user.is_client %}
+    {% url 'clients:progress' %}
+    {%endif%}
+    " class="inline-flex items-center gap-2 text-accent-600 hover:text-accent-700 transition">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent-50 ring-1 ring-accent-200">
+        <i class="fas fa-arrow-left"></i>
+      </span>
+      <span class="font-medium">Back</span>
+    </a>
+
+    <!-- Sticky sub-actions (Overview is trainer-only) -->
+    <div class="sticky top-2 z-20 inline-flex flex-wrap items-center gap-2 bg-white/80 backdrop-blur border border-gray-200 rounded-2xl px-2 py-2 shadow-sm">
+      <a href="{% url 'progress:add_progress' client_pk=client_profile.pk %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition">
+        <i class="fas fa-plus-circle"></i><span>Add Progress</span>
+      </a>
+      <a href="{% url 'clients:progress' %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold bg-yellow-600 text-white hover:bg-yellow-700 transition">
+        <i class="fas fa-list"></i><span>Progress List</span>
+      </a>
+      {% if is_trainer %}
+       <a href="{% url 'progress:list' %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold bg-yellow-600 text-white hover:bg-yellow-700 transition">
+        <i class="fas fa-list"></i><span>Progress List</span>
+      </a>
+      <a href="{% url 'progress:create_goal' %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition">
+        <i class="fas fa-bullseye"></i><span>Create Goal</span>
+      </a>
+      <a href="{% url 'progress:overview' %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition">
+        <i class="fas fa-chart-pie"></i><span>Overview</span>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Header card: name + filters + counters -->
+  <header class="rounded-3xl bg-white/70 backdrop-blur border border-gray-200 p-6 sm:p-8 shadow-lg">
+    <div class="flex items-center justify-between gap-6 max-md:flex-col max-md:items-start">
+      <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary-900">
+        <i class="fas fa-user-circle text-primary-600 mr-2"></i>
+        {{ client_profile.user.get_full_name }} <span class="text-primary-500">Progress</span>
+      </h1>
+
+      <!-- Filters (GET params; no template filters) -->
+      <form id="filtersForm" method="get" class="flex flex-wrap items-end gap-3">
+        <div class="flex flex-col">
+          <label for="start" class="text-xs text-gray-600">Start</label>
+          <input id="start" name="start" type="date" value="{{ filter_start }}"
+                 class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-300">
+        </div>
+        <div class="flex flex-col">
+          <label for="end" class="text-xs text-gray-600">End</label>
+          <input id="end" name="end" type="date" value="{{ filter_end }}"
+                 class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-300">
+        </div>
+        
+        <div class="flex flex-col">
+          <label for="workout" class="text-xs text-gray-600">Workout</label>
+          <select id="workout" name="workout"
+                  class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-300">
+            <option value="" {% if not filter_workout %}selected{% endif %}>All</option>
+            <option value="yes" {% if filter_workout == "yes" %}selected{% endif %}>Done</option>
+            <option value="no" {% if filter_workout == "no" %}selected{% endif %}>Missed</option>
+          </select>
+        </div>
+     
+      
+        <div class="flex items-center gap-2">
+          <button type="submit"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition">
+            <i class="fas fa-filter"></i><span>Apply</span>
+          </button>
+          <a href="?"
+             class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-gray-100 text-gray-800 hover:bg-gray-200 transition">
+            <i class="fas fa-undo"></i><span>Reset</span>
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Animated counters -->
+    <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4" id="counters">
+      <div class="rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
+        <p class="text-xs text-gray-500">Total entries</p>
+        <p class="text-2xl font-extrabold" data-target="{{ total_entries }}">0</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
+        <p class="text-xs text-gray-500">Workouts done</p>
+        <p class="text-2xl font-extrabold" data-target="{{ workouts_done }}">0</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
+        <p class="text-xs text-gray-500">Consistency Rate %</p>
+        <p class="text-2xl font-extrabold" data-target="{{ average_adherence }}">0</p>
+      </div>
+      <div class="rounded-2xl bg-white border border-gray-200 p-4 shadow-sm">
+        <p class="text-xs text-gray-500">Avg weight</p>
+        <p class="text-2xl font-extrabold" data-target="{{ avg_weight }}">0</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Split view: Charts + Goals -->
+  <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <!-- Charts panel -->
+    <div class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 p-5 shadow-lg">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-primary-900">Trends</h3>
+        <div class="flex gap-2">
+          <button type="button" data-chart-toggle="weight" class="px-3 py-1.5 text-xs rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition">Weight</button>
+          <button type="button" data-chart-toggle="workout" class="px-3 py-1.5 text-xs rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition">Workout</button>
+        </div>
+      </div>
+      <div class="mt-4 space-y-8">
+        <div>
+          <canvas id="progressChart" height="100" aria-label="Weight trend"></canvas>
+        </div>
+      </div>
+      <p class="mt-3 text-xs text-gray-500">Tip: Click a point/bar to filter the table by that date.</p>
+    </div>
+
+    <!-- Goals panel with expandable sections -->
+    <div class="rounded-3xl bg-white/80 backdrop-blur border border-gray-200 p-5 shadow-lg">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-primary-900">Goals</h3>
+        <a href="#goals" class="text-sm text-primary-600 hover:text-primary-700">Jump to goals</a>
+      </div>
+
+      {% if client_goals %}
+      <div id="goals" class="mt-4 space-y-4">
+        {% for goal in client_goals %}
+        <article class="group rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm hover:shadow-md transition">
+          <button type="button"
+                  class="w-full flex items-center justify-between text-left"
+                  data-accordion-toggle>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-tr from-primary-500 to-emerald-500 text-white shadow">
+                <i class="fas fa-flag-checkered text-sm"></i>
+              </span>
+              <div>
+                <h4 class="font-semibold text-primary-900">{{ goal.title }}</h4>
+                <p class="text-xs text-gray-500">Type: {{ goal.goal_type }} • Created: {{ goal.created_at }}</p>
+              </div>
+            </div>
+            <i class="fas fa-chevron-down text-gray-500 transition-transform" data-accordion-icon></i>
+          </button>
+
+          <div class="mt-3" data-accordion-content>
+            <p class="text-sm text-gray-700">{{ goal.description }}</p>
+            <div class="mt-3 grid grid-cols-3 gap-3 text-sm">
+              <p><span class="text-gray-500">Target:</span> <span class="font-medium">{{ goal.target_value }} {{ goal.unit }}</span></p>
+              <p><span class="text-gray-500">Current:</span> <span class="font-medium">{{ goal.current_value }} {{ goal.unit }}</span></p>
+              <p><span class="text-gray-500">Progress:</span> <span class="font-medium">{{ goal.progress_percentage }}%</span></p>
+            </div>
+            <div class="mt-3">
+              <div class="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 via-lime-500 to-teal-500 transition-[width] duration-700 ease-out"
+                     style="width: {{ goal.progress_percentage }}%;"></div>
+              </div>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="mt-4 rounded-2xl border border-dashed border-gray-300 p-6 text-gray-500">
+        <i class="fas fa-info-circle mr-2"></i>No goals yet.
+      </div>
+      {% endif %}
+    </div>
+  </section>
+<!-- Container for Detail Page -->
+<div class="space-y-6">
+
+  <!-- Progress Photo Section -->
+  <section class="rounded-2xl bg-white/90 backdrop-blur border border-gray-200 p-6 shadow-lg">
+    <button class="w-full flex items-center justify-between text-left" data-accordion-toggles>
+      <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+        <i class="fas fa-camera text-primary-500"></i> Progress Photo
+      </h3>
+      <i class="fas fa-chevron-down text-gray-400 transition-transform" data-accordion-icon></i>
+    </button>
+    <div class="mt-4 hidden" data-accordion-content>
+      <div class="flex flex-col sm:flex-row items-center gap-6">
+        <div class="w-36 h-36 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+          {% if entry_detail.progress_photo %}
+            <img src="{{ entry_detail.progress_photo.url }}" alt="Progress Photo" class="w-full h-full object-cover">
+          {% else %}
+            <i class="fas fa-image text-4xl text-gray-400"></i>
+          {% endif %}
+        </div>
+        <p class="text-gray-600 italic flex-1">
+          Trainer Feedback: {{ entry.trainer_feedback|default:"No feedback yet." }}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Adherence Score Section -->
+  <section class="rounded-2xl bg-white/90 backdrop-blur border border-gray-200 p-6 shadow-lg">
+    <button class="w-full flex items-center justify-between text-left" data-accordion-toggles>
+      <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+        <i class="fas fa-check-double text-primary-500"></i> Consistency & Adherence
+      </h3>
+      <i class="fas fa-chevron-down text-gray-400 transition-transform" data-accordion-icon></i>
+    </button>
+    <div class="mt-4 hidden" data-accordion-content>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+        <div class="bg-emerald-100 text-emerald-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-dumbbell text-lg"></i>
+          <p class="text-sm font-medium">Workout</p>
+          <p class="text-xl font-bold">{% if entry_detail.workout_completed %} <i class="fas fa-check-double text-success-600 text-lg"></i>{% else %}<i class="fas fa-circle-exclamation text-danger-500 text-lg"></i>{% endif %}</p>
+          <span class="absolute bottom-full mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+            {% if entry_detail.workout_completed %}Completed{% else %}Missed{% endif %}
+          </span>
+        </div>
+        <div class="bg-blue-100 text-blue-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-utensils text-lg"></i>
+          <p class="text-sm font-medium">Meal</p>
+          <p class="text-xl font-bold">{% if entry_detail.meal_plan_followed %} <i class="fas fa-check-double text-success-600 text-lg"></i>
+{% else %}<i class="fas fa-circle-exclamation text-danger-500 text-lg"></i>
+{% endif %}</p>
+          <span class="absolute bottom-full mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+            {% if entry_detail.meal_plan_followed %}Followed{% else %}Skipped{% endif %}
+          </span>
+        </div>
+        <div class="bg-yellow-100 text-yellow-700 rounded-xl p-4 shadow-sm col-span-2 group relative">
+          <i class="fas fa-percentage text-lg"></i>
+          <p class="text-sm font-medium">Adherence Score</p>
+          <p class="text-xl font-bold">{{ entry_detail.adherence_score }}%</p>
+          <span class="absolute bottom-full mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+            Overall adherence based on workout & meal completion
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Body Measurements Section -->
+  <section class="rounded-2xl bg-white/90 backdrop-blur border border-gray-200 p-6 shadow-lg">
+    <button class="w-full flex items-center justify-between text-left" data-accordion-toggles>
+      <h3 class="text-lg font-bold text-primary-900 flex items-center gap-2">
+        <i class="fas fa-ruler-combined text-primary-500"></i> Body Measurements
+      </h3>
+      <i class="fas fa-chevron-down text-gray-400 transition-transform" data-accordion-icon></i>
+    </button>
+    <div class="mt-4 hidden" data-accordion-content>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+        <div class="bg-purple-100 text-purple-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-weight text-lg"></i>
+          <p class="text-sm font-medium">Weight</p>
+          <p class="text-xl font-bold">{{ entry_detail.current_weight|default:"-" }} kg</p>
+        </div>
+        <div class="bg-pink-100 text-pink-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-tape text-lg"></i>
+          <p class="text-sm font-medium">Chest</p>
+          <p class="text-xl font-bold">{{ entry_detail.chest_measurement|default:"-" }} cm</p>
+        </div>
+        <div class="bg-teal-100 text-teal-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-tape text-lg"></i>
+          <p class="text-sm font-medium">Waist</p>
+          <p class="text-xl font-bold">{{ entry_detail.waist_measurement|default:"-" }} cm</p>
+        </div>
+        <div class="bg-orange-100 text-orange-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-tape text-lg"></i>
+          <p class="text-sm font-medium">Hip</p>
+          <p class="text-xl font-bold">{{ entry_detail.hip_measurement|default:"-" }} cm</p>
+        </div>
+        <div class="bg-indigo-100 text-indigo-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-tape text-lg"></i>
+          <p class="text-sm font-medium">Arm</p>
+          <p class="text-xl font-bold">{{ entry_detail.arm_measurement|default:"-" }} cm</p>
+        </div>
+        <div class="bg-lime-100 text-lime-700 rounded-xl p-4 shadow-sm group relative">
+          <i class="fas fa-tape text-lg"></i>
+          <p class="text-sm font-medium">Thigh</p>
+          <p class="text-xl font-bold">{{ entry_detail.thigh_measurement|default:"-" }} cm</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Accordion JS -->
+
+
+
+
+
+
+
+  <!-- Desktop: Advanced table (sticky header, sortable, hover effects) -->
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-bold text-primary-900">Entries table</h2>
+      <div class="flex items-center gap-2">
+        <button type="button" class="px-3 py-1.5 text-xs rounded-full bg-gray-100 hover:bg-gray-200 transition" data-sort="date">Sort by date</button>
+        <button type="button" class="px-3 py-1.5 text-xs rounded-full bg-gray-100 hover:bg-gray-200 transition" data-sort="weight">Sort by weight</button>
+        <button type="button" class="px-3 py-1.5 text-xs rounded-full bg-gray-100 hover:bg-gray-200 transition" data-sort="energy">Sort by energy</button>
+      </div>
+    </div>
+
+    <div class="overflow-hidden rounded-3xl bg-white/80 backdrop-blur border border-gray-200 shadow-lg">
+      <div class="overflow-x-auto max-h-[60vh]">
+        <table id="progressTable" class="min-w-full text-sm text-gray-800">
+          <thead class="bg-white sticky top-0 z-10 text-xs uppercase text-gray-600 tracking-wide border-b">
+            <tr>
+              <th class="px-4 py-3 text-left">Date</th>
+              <th class="px-4 py-3 text-left">Workout</th>
+              <th class="px-4 py-3 text-left">Meal</th>
+              <th class="px-4 py-3 text-left">Weight</th>
+              <th class="px-4 py-3 text-left">Energy</th>
+              <th class="px-4 py-3 text-left">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in progress_entries %}
+            <tr class="border-t hover:bg-gray-50 transition"
+                data-date="{{ entry.date }}"
+                data-weight="{% if entry.current_weight %}{{ entry.current_weight }}{% else %}{% endif %}"
+                data-energy="{% if entry.energy_level %}{{ entry.energy_level }}{% else %}{% endif %}"
+                data-workout="{% if entry.workout_completed %}1{% else %}0{% endif %}"
+                data-meal="{% if entry.meal_plan_followed %}1{% else %}0{% endif %}"
+                data-notes="{{ entry.notes }}"
+                data-exercise="{{ entry.exercise }}">
+              <td class="px-4 py-3 whitespace-nowrap">{{ entry.date }}</td>
+              <td class="px-4 py-3">
+                {% if entry.workout_completed %}
+                <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs animate-pop" title="Workout completed">
+                  <i class="fas fa-check-circle mr-1"></i> Done
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs animate-pop" title="Workout missed">
+                  <i class="fas fa-times-circle mr-1"></i> Missed
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3">
+                {% if entry.meal_plan_followed %}
+                <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs animate-pop" title="Meal followed">
+                  <i class="fas fa-check-circle mr-1"></i> Followed
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-2 py-1 rounded-full bg-rose-100 text-rose-700 text-xs animate-pop" title="Meal skipped">
+                  <i class="fas fa-times-circle mr-1"></i> Skipped
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3">{% if entry.current_weight %}{{ entry.current_weight }} kg{% else %}-{% endif %}</td>
+              <td class="px-4 py-3">
+               {% if entry.energy_level == 5 %}
+  <span class="inline-flex items-center px-2 py-1 gap-1 rounded-full bg-green-100 text-green-700 text-xs animate-pop" title="Very High Energy">
+    <i class="fas fa-bolt"></i> Very High
+  </span>
+{% elif entry.energy_level == 4 %}
+  <span class="inline-flex items-center px-2 py-1 gap-1 rounded-full bg-emerald-100 text-emerald-700 text-xs animate-pop" title="High Energy">
+    <i class="fas fa-battery-full"></i> High
+  </span>
+{% elif entry.energy_level == 3 %}
+  <span class="inline-flex items-center px-2 py-1 gap-1 rounded-full bg-blue-100 text-blue-700 text-xs animate-pop" title="Moderate Energy">
+    <i class="fas fa-battery-half"></i> Moderate
+  </span>
+{% elif entry.energy_level == 2 %}
+  <span class="inline-flex items-center px-2 py-1 gap-1 rounded-full bg-amber-100 text-amber-700 text-xs animate-pop" title="Low Energy">
+    <i class="fas fa-battery-quarter"></i> Low
+  </span>
+{% elif entry.energy_level == 1 %}
+  <span class="inline-flex items-center px-2 py-1 gap-1 rounded-full bg-rose-100 text-rose-700 text-xs animate-pop" title="Very Low Energy">
+    <i class="fas fa-battery-empty"></i> Very Low
+  </span>
+{% else %}
+  <span class="text-xs text-gray-400">N/A</span>
+{% endif %}
+
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-gray-600" title="{{ entry.exercise }}">{{ entry.notes }}</span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-4 py-6 text-center text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i>No progress entries.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Hidden data source for charts (no template filters) -->
+    <div id="entriesData" class="hidden">
+      {% for entry in progress_entries %}
+      <div class="entry"
+           data-x="{{ entry.date }}"
+           data-weight="{% if entry.current_weight %}{{ entry.current_weight }}{% endif %}"
+           data-energy="{% if entry.energy_level %}{{ entry.energy_level }}{% endif %}"
+           data-workout="{% if entry.workout_completed %}1{% else %}0{% endif %}">
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Floating Action Button (FAB) -->
+  <div class="fixed bottom-20 right-6">
+    <div id="fabMenu" class="hidden mb-2 space-y-2">
+      {% if is_trainer %}
+      <a href="{% url 'progress:overview' %}"
+         class="block px-3 py-2 rounded-xl bg-blue-600 text-white shadow hover:bg-blue-700 transition">
+        <i class="fas fa-chart-pie mr-2"></i>Overview
+      </a>
+      {% endif %}
+      <a href="{% url 'progress:add_progress' client_pk=client_profile.pk %}"
+         class="block px-3 py-2 rounded-xl bg-emerald-600 text-white shadow hover:bg-emerald-700 transition">
+        <i class="fas fa-plus-circle mr-2"></i>Add Progress
+      </a>
+      <a href="{% url 'progress:create_goal' %}"
+         class="block px-3 py-2 rounded-xl bg-primary-600 text-white shadow hover:bg-primary-700 transition">
+        <i class="fas fa-bullseye mr-2"></i>Create Goal
+      </a>
+    </div>
+    <button id="fabButton" type="button"
+            class="h-14 w-14 rounded-full bg-primary-600 text-white shadow-lg hover:bg-primary-700 transition flex items-center justify-center">
+      <i class="fas fa-plus text-xl"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Assumes chart.min.js is already included globally -->
+<script>
+  document.querySelectorAll('[data-accordion-toggles]').forEach(button => {
+    button.addEventListener('click', () => {
+      const content = button.nextElementSibling;
+      const isOpen = !content.classList.contains('hidden');
+      
+      // Auto collapse all other sections
+      document.querySelectorAll('[data-accordion-content]').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('[data-accordion-icon]').forEach(icon => icon.classList.remove('rotate-180'));
+
+      // Toggle current section
+      if (!isOpen) {
+        content.classList.remove('hidden');
+        button.querySelector('[data-accordion-icon]').classList.add('rotate-180');
+      }
+    });
+  });
+</script>
+<script>
+  // Animated counters
+  (function(){
+    const cards = document.querySelectorAll('#counters > div');
+    const animate = (el) => {
+      const target = parseFloat(el.dataset.target || '0');
+      const duration = 900;
+      const start = 0;
+      const startTime = performance.now();
+      const step = (now) => {
+        const p = Math.min(1, (now - startTime) / duration);
+        const v = start + (target - start) * p;
+        el.textContent = Number.isInteger(target) ? Math.round(v) : v.toFixed(1);
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const num = e.target.querySelector('[data-target]');
+          if (num) animate(num);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    cards.forEach(c => io.observe(c));
+  })();
+
+  // Accordion (goals expand/collapse)
+  document.querySelectorAll('[data-accordion-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('article');
+      const content = card.querySelector('[data-accordion-content]');
+      const icon = card.querySelector('[data-accordion-icon]');
+      const isOpen = !content.classList.contains('hidden');
+      content.classList.toggle('hidden');
+      icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+    });
+  });
+
+  // FAB toggle
+  (function(){
+    const fabBtn = document.getElementById('fabButton');
+    const fabMenu = document.getElementById('fabMenu');
+    if (!fabBtn || !fabMenu) return;
+    fabBtn.addEventListener('click', () => {
+      fabMenu.classList.toggle('hidden');
+      fabBtn.classList.toggle('rotate-45');
+    });
+  })();
+
+  // Read entries from DOM (no template filters)
+  function readEntries() {
+    const nodes = document.querySelectorAll('#entriesData .entry');
+    const data = [];
+    nodes.forEach(n => {
+      data.push({
+        x: n.getAttribute('data-x'),
+        weight: (n.getAttribute('data-weight') || '') === '' ? null : parseFloat(n.getAttribute('data-weight')),
+        workout: n.getAttribute('data-workout') === '1'
+      });
+    });
+    return data;
+  }
+
+  // Charts: build from DOM data
+  const raw = readEntries();
+  const labels = raw.map(r => r.x);
+  const weightData = raw.map(r => r.weight);
+  const workoutData = raw.map(r => r.workout ? 1 : 0);
+
+  // Weight chart (line)
+const ctx = document.getElementById('progressChart');
+if (ctx && window.Chart) {
+  const progressChart = new Chart(ctx, {
+    data: {
+      labels, // array of dates
+      datasets: [
+        {
+          type: 'line',
+          label: 'Weight (kg)',
+          data: weightData,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.15)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          yAxisID: 'y-weight',
+        },
+        {
+          type: 'bar',
+          label: 'Workout Completion',
+          data: workoutData,
+          backgroundColor: workoutData.map(val => val === 1 ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.6)'),
+          borderRadius: 8,
+          barThickness: 16,
+          yAxisID: 'y-workout',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      plugins: {
+        legend: { display: true },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.dataset.type === 'bar') {
+                return ctx.raw === 1 ? 'Workout Completed ✅' : 'Workout Missed ❌';
+              } else if (ctx.dataset.type === 'line') {
+                return `Weight: ${ctx.raw} kg`;
+              }
+            }
+          },
+          backgroundColor: '#111827',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+        }
+      },
+      scales: {
+        'y-weight': {
+          type: 'linear',
+          position: 'left',
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { color: '#2563eb' }
+        },
+        'y-workout': {
+          type: 'linear',
+          position: 'right',
+          min: 0,
+          max: 1,
+          grid: { drawOnChartArea: false },
+          ticks: { stepSize: 1, color: '#22c55e', callback: val => val === 1 ? 'Done' : 'Missed' }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#374151' }
+        }
+      },
+      animation: {
+        duration: 800,
+        easing: 'easeOutQuart'
+      },
+      onClick: (_, elements) => {
+        if (elements.length > 0) filterTableByDate(labels[elements[0].index]);
+      }
+    }
+  });
+}
+
+  // Toggle chart visibility buttons
+  document.querySelectorAll('[data-chart-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-chart-toggle');
+      document.getElementById('weightChart').parentElement.style.display = target === 'weight' ? '' : 'none';
+      document.getElementById('energyChart').parentElement.style.display = target === 'energy' ? '' : 'none';
+      document.getElementById('workoutChart').parentElement.style.display = target === 'workout' ? '' : 'none';
+    });
+  });
+
+  // Table filtering by date from charts
+  function filterTableByDate(dateStr) {
+    const rows = document.querySelectorAll('#progressTable tbody tr');
+    rows.forEach(r => {
+      const d = r.getAttribute('data-date');
+      r.style.display = (d === dateStr) ? '' : 'none';
+    });
+  }
+
+  // Dynamic search (notes/exercise)
+  (function(){
+    const q = document.getElementById('q');
+    if (!q) return;
+    q.addEventListener('input', () => {
+      const term = q.value.toLowerCase();
+      const rows = document.querySelectorAll('#progressTable tbody tr');
+      rows.forEach(r => {
+        const notes = (r.getAttribute('data-notes') || '').toLowerCase();
+        const ex = (r.getAttribute('data-exercise') || '').toLowerCase();
+        r.style.display = (notes.includes(term) || ex.includes(term)) ? '' : 'none';
+      });
+    });
+  })();
+
+  // Sortable columns (client-side)
+  (function(){
+    const table = document.getElementById('progressTable');
+    if (!table) return;
+
+    function sortRows(key, numeric=false, desc=false) {
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.querySelector('td'));
+      rows.sort((a, b) => {
+        const av = a.getAttribute('data-' + key) || '';
+        const bv = b.getAttribute('data-' + key) || '';
+        if (numeric) {
+          const an = av === '' ? -Infinity : parseFloat(av);
+          const bn = bv === '' ? -Infinity : parseFloat(bv);
+          return desc ? (bn - an) : (an - bn);
+        } else {
+          return desc ? bv.localeCompare(av) : av.localeCompare(bv);
+        }
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    }
+
+    let toggles = { date: false, weight: false, energy: false };
+    document.querySelectorAll('[data-sort]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-sort');
+        toggles[key] = !toggles[key];
+        const numeric = key !== 'date';
+        sortRows(key, numeric, toggles[key]);
+      });
+    });
+  })();
+</script>
+
+<style>
+  @keyframes pop { 0% { transform: scale(0.95); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+  .animate-pop { animation: pop 300ms ease-out; }
+</style>
+
+{% endblock %}

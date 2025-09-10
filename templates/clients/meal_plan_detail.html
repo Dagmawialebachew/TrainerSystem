@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Meal Plan Detail · {{ client_profile.user.first_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-primary-50/60 via-white to-primary-100/80 py-12">
+  <div class="max-w-6xl mx-auto px-4 space-y-10">
+
+    <!-- Page Header -->
+    <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 
+                sm:flex-row sm:items-center sm:justify-between overflow-hidden bg-white/30 backdrop-blur-md shadow-2xl">
+
+      <!-- Left: Page title -->
+      <div class="z-10">
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-3">
+          <i class="fas fa-utensils text-primary-400"></i>
+          Meal Plan Detail
+        </h1>
+        <p class="text-gray-500 text-base sm:text-lg mt-1">
+          Detailed weekly nutrition plan with macros and calories overview.
+        </p>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="flex flex-wrap gap-3 z-10">
+        <button
+          class="inline-flex items-center px-5 py-2 bg-primary-600 text-white text-sm font-semibold 
+                 rounded-2xl shadow-lg hover:bg-primary-700 active:scale-95 transition-transform"
+          onclick="alert('Request New Meal Plan flow coming soon!')"
+        >
+          <i class="fas fa-file-medical-alt mr-2"></i>
+          Request New Plan
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Meal Structure -->
+    {% if meal_structure %}
+      {% for day, meals in meal_structure.items %}
+      <div id="{{ day }}" class="relative flex flex-col bg-white/30 border border-white/20 backdrop-blur-md rounded-3xl shadow-2xl p-6 space-y-4 transform hover:scale-105 transition-all duration-300">
+
+        <!-- Day Header with Collapse Toggle -->
+        <button type="button" class="flex items-center justify-between w-full p-2 rounded-xl bg-white/20 backdrop-blur-md hover:bg-white/30 transition" 
+                onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90');">
+          <h2 class="text-xl font-bold text-primary-600 flex items-center gap-2">
+            <i class="fas fa-calendar-day text-primary-400 transition-transform duration-300"></i>
+            {{ day }}
+          </h2>
+          <i class="fas fa-chevron-right text-gray-500 transition-transform duration-300 {% if current_day == day %}rotate-90{% endif %}"></i>
+        </button>
+
+        <div class="space-y-4 {% if current_day != day %}hidden{% endif %}">
+          <!-- Meals -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for meal_type, items in meals.items %}
+            <div class="rounded-2xl p-4 flex flex-col h-full shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300 bg-white/70 backdrop-blur-md">
+
+              <!-- Meal Type Badge -->
+              <h3 class="font-semibold text-sm text-white rounded-full px-3 py-1 flex items-center gap-2
+                         {% if meal_type == 'Breakfast' %}bg-gradient-to-r from-yellow-400 to-orange-300
+                         {% elif meal_type == 'Lunch' %}bg-gradient-to-r from-red-400 to-pink-300
+                         {% elif meal_type == 'Dinner' %}bg-gradient-to-r from-purple-400 to-indigo-300
+                         {% else %}bg-gradient-to-r from-green-400 to-teal-300{% endif %}">
+                {% if meal_type == 'Breakfast' %}<i class="fas fa-coffee"></i>
+                {% elif meal_type == 'Lunch' %}<i class="fas fa-hamburger"></i>
+                {% elif meal_type == 'Dinner' %}<i class="fas fa-pizza-slice"></i>
+                {% else %}<i class="fas fa-apple-alt"></i>{% endif %}
+                {{ meal_type }}
+              </h3>
+
+              {% if items %}
+              <!-- Meal Items -->
+              <ul class="space-y-2 mt-2 text-sm flex-1">
+                {% for item in items %}
+                <li class="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition">
+                  <span class="font-medium">{{ item.name }}</span>
+                  <span class="text-xs text-gray-500">{{ item.qty }} g</span>
+                </li>
+                {% endfor %}
+              </ul>
+
+              <!-- Macros -->
+              {% with total_protein=0 total_carbs=0 total_fat=0 %}
+                {% for item in items %}
+                  {% with item_protein=item.protein|default:0 item_carbs=item.carbs|default:0 item_fat=item.fat|default:0 %}
+                    {% with total_protein=total_protein|add:item_protein total_carbs=total_carbs|add:item_carbs total_fat=total_fat|add:item_fat %}
+                    {% endwith %}
+                  {% endwith %}
+                {% endfor %}
+
+                <!-- Badges -->
+                <div class="mt-3 flex gap-2 flex-wrap">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                    <i class="fas fa-bolt animate-pulse"></i> Protein: {{ total_protein }}g
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                    <i class="fas fa-bread-slice animate-pulse"></i> Carbs: {{ total_carbs }}g
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-pink-100 text-pink-800">
+                    <i class="fas fa-oil-can animate-pulse"></i> Fat: {{ total_fat }}g
+                  </span>
+                </div>
+
+                <!-- Progress Bars -->
+              
+
+              {% endwith %}
+              {% else %}
+              <p class="text-gray-400 italic mt-2 flex-1">No items listed for this meal.</p>
+              {% endif %}
+
+            </div>
+            {% endfor %}
+          </div>
+
+        </div> <!-- collapsible content -->
+
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-20">
+        <i class="fas fa-utensils fa-4x text-gray-300 mb-6"></i>
+        <p class="text-gray-500 text-lg">No meal plan structure available yet</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+  // Scroll to current day
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentDayElement = document.getElementById("{{ current_day }}");
+    if (currentDayElement) {
+      currentDayElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+</script>
+
+{% endblock %}

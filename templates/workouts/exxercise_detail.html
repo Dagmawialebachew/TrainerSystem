@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exercise.name }} - {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-gray-900">{{ exercise.name }}</h1>
+        <p class="text-gray-600">{{ exercise.category|title }}</p>
+
+        {% if exercise.image %}
+            <img src="{{ exercise.image.url }}" class="mt-4 rounded" alt="{{ exercise.name }}">
+        {% endif %}
+
+        <h2 class="mt-6 font-medium text-gray-900">Equipment Needed</h2>
+        <p class="text-gray-700">{{ exercise.equipment_needed|title }}</p>
+
+        <h2 class="mt-6 font-medium text-gray-900">Muscle Groups</h2>
+        <p class="text-gray-700">{{ exercise.muscle_groups }}</p>
+
+        <h2 class="mt-6 font-medium text-gray-900">Setup Instructions</h2>
+        <p class="text-gray-700">{{ exercise.setup_instructions }}</p>
+
+        <h2 class="mt-6 font-medium text-gray-900">Execution Steps</h2>
+        <p class="text-gray-700">{{ exercise.execution_steps }}</p>
+
+        {% if exercise.safety_tips %}
+            <h2 class="mt-6 font-medium text-gray-900">Safety Tips</h2>
+            <p class="text-gray-700">{{ exercise.safety_tips }}</p>
+        {% endif %}
+
+        {% if exercise.demonstration_video_url %}
+            <h2 class="mt-6 font-medium text-gray-900">Demo Video</h2>
+            <a href="{{ exercise.demonstration_video_url }}" target="_blank" class="text-primary hover:underline">{{ exercise.demonstration_video_url }}</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

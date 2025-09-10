@@ -1,0 +1,106 @@
+{% extends "list_base.html" %}
+
+{% block list_title %}My Foods{% endblock %}
+
+{% block header_actions %}
+<div class="flex flex-wrap gap-4 mt-6">
+
+  <!-- Create Plan -->
+  <a href="{% url 'nutrition:create' %}"
+     class="group inline-flex items-center gap-3 px-6 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200 hover:scale-105
+            bg-gradient-to-r from-primary-600 to-primary-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-300">
+    <i class="fas fa-clipboard-list text-white group-hover:animate-pulse"></i>
+    <span>Create Plan</span>
+  </a>
+
+  <!-- Add Food -->
+  <a href="{% url 'nutrition:food_create' %}"
+     class="group inline-flex items-center gap-3 px-6 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200 hover:scale-105
+            bg-gradient-to-r from-success-600 to-success-400 text-white focus:outline-none focus:ring-2 focus:ring-success-300">
+    <i class="fas fa-carrot text-white group-hover:animate-pulse"></i>
+    <span>Add Food</span>
+  </a>
+
+  <!-- See Food List -->
+  <a href="{% url 'nutrition:list' %}"
+     class="group inline-flex items-center gap-3 px-6 py-2 rounded-xl font-semibold shadow-md transition-transform duration-200 hover:scale-105
+            bg-gradient-to-r from-warning-600 to-warning-400 text-white focus:outline-none focus:ring-2 focus:ring-warning-300">
+    <i class="fas fa-list-ul text-white group-hover:animate-pulse"></i>
+    <span>See Meal Plan List</span>
+  </a>
+
+</div>
+
+{% endblock %}
+
+{% block cards_view %}
+{% for food in foods %}
+<div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 p-6 flex justify-between items-center">
+    <div>
+        <h3 class="text-xl font-semibold text-primary-900">{{ food.name }}</h3>
+        <p class="text-sm text-primary-500 mt-1">{{ food.calories_per_100g|default:"N/A" }} kcal / 100g</p>
+        <p class="text-sm text-primary-500">Category: {{ food.category }}</p>
+    </div>
+    <div class="flex space-x-2">
+        <a href="{% url 'nutrition:food_edit' food.pk %}" class="bg-gradient-to-r from-warning-400 to-warning-300 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1 hover:scale-105 transition">
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        </a>
+        <a href="{% url 'nutrition:food_delete' food.pk %}" class="bg-gradient-to-r from-danger-400 to-danger-300 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1 hover:scale-105 transition">
+            <i class="fas fa-trash"></i>
+            <span>Delete</span>
+        </a>
+    </div>
+</div>
+{% empty %}
+<p class="col-span-full text-center text-primary-400">No foods found. <a href="{% url 'nutrition:food_create' %}" class="text-primary-600 hover:underline">Add one</a></p>
+{% endfor %}
+{% endblock %}
+
+{% block table_view %}
+<table class="min-w-full divide-y divide-primary-200">
+    <thead class="bg-primary-50">
+        <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-primary-400 uppercase tracking-wide">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-primary-400 uppercase tracking-wide">Calories / 100g</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-primary-400 uppercase tracking-wide">Category</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-primary-400 uppercase tracking-wide">Actions</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-primary-100">
+        {% for food in foods %}
+        <tr class="hover:bg-primary-50 transition">
+            <td class="px-6 py-4 font-medium text-primary-900">{{ food.name }}</td>
+            <td class="px-6 py-4 text-sm text-primary-500">{{ food.calories_per_100g|default:"N/A" }} kcal</td>
+            <td class="px-6 py-4 text-sm text-primary-500">{{ food.category }}</td>
+            <td class="px-6 py-4 flex space-x-2">
+                <a href="{% url 'nutrition:food_edit' food.pk %}" class="text-warning-600 font-medium flex items-center space-x-1 hover:underline">
+                    <i class="fas fa-edit"></i> <span>Edit</span>
+                </a>
+                <a href="{% url 'nutrition:food_delete' food.pk %}" class="text-danger-600 font-medium flex items-center space-x-1 hover:underline">
+                    <i class="fas fa-trash"></i> <span>Delete</span>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-primary-400">No foods found. <a href="{% url 'nutrition:food_create' %}" class="text-primary-600 hover:underline">Add one</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block pagination %}
+{% if is_paginated %}
+<div class="flex justify-center mt-4 space-x-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded-md hover:bg-primary-50">&laquo; Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 border rounded-md bg-primary-100">{{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded-md hover:bg-primary-50">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

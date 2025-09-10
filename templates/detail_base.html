@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+    <!-- Back Link -->
+    <div>
+        <a href="{% block back_url %}#{% endblock %}" 
+           class="text-accent-500 font-medium hover:text-accent-700 flex items-center space-x-2">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white shadow-lg rounded-2xl p-6 flex items-center space-x-6">
+        {% if block.detail_image %}{% block detail_image %}{% endblock %}
+        {% else %}
+            <div class="h-20 w-20 bg-primary-200 rounded-full flex items-center justify-center text-primary-700 font-bold text-xl">
+                {% block detail_initials %}{% endblock %}
+            </div>
+        {% endif %}
+        <div>
+            <h1 class="text-3xl font-bold text-primary-900">{% block detail_title %}Title{% endblock %}</h1>
+            {% if block.detail_subtitle %}
+            <p class="text-primary-600 mt-1">{% block detail_subtitle %}Subtitle{% endblock %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Detail Sections -->
+    <div class="space-y-6">
+        {% block detail_sections %}{% endblock %}
+    </div>
+
+</div>
+{% endblock %}

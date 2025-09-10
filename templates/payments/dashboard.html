@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block content %}
+{% load humanize %}
+<div class="p-4 space-y-8">
+
+ <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between overflow-hidden">
+  <!-- Left Section -->
+  <div class="z-10">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-2">
+      <i class="fas fa-wallet text-primary-400"></i> Payments Dashboard
+    </h1>
+    <p class="text-gray-500 text-base sm:text-lg mt-1">Track and manage your transactions</p>
+  </div>
+
+  <!-- Right Section: Actions -->
+  <div class="flex flex-wrap gap-3 z-10">
+    <a href="{% url 'payments:create' %}" class="inline-flex items-center px-5 py-2 bg-success-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-success-700 transition">
+      <i class="fas fa-plus-circle mr-2"></i> New Payment
+    </a>
+    <a href="{% url 'payments:billing_history' %}" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-indigo-700 transition">
+      <i class="fas fa-chart-bar mr-2"></i> Analytics
+    </a>
+  </div>
+
+  <!-- Background Flair -->
+  <div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute -top-16 -right-32 w-96 h-96 bg-primary-100/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-primary-50/10 rounded-full blur-2xl"></div>
+  </div>
+</div>
+
+
+  
+
+  <!-- Stat Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+  <!-- Total Revenue -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Total Revenue</h3>
+      <p class="text-3xl font-bold text-blue-600">{{ payment_stats.total_revenue|default:0|intcomma }} ETB</p>
+    </div>
+    <div class="bg-blue-100 p-4 rounded-full">
+      <i class="fas fa-coins text-blue-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Completed</h3>
+      <p class="text-3xl font-bold text-green-600">{{ payment_stats.completed_payments|default:0 }}</p>
+    </div>
+    <div class="bg-green-100 p-4 rounded-full">
+      <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Pending</h3>
+      <p class="text-3xl font-bold text-yellow-600">{{ payment_stats.pending_payments|default:0 }}</p>
+    </div>
+    <div class="bg-yellow-100 p-4 rounded-full">
+      <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Subscriptions -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Subscriptions</h3>
+      <p class="text-3xl font-bold text-purple-600">{{ subscription_count|default:0 }}</p>
+    </div>
+    <div class="bg-purple-100 p-4 rounded-full">
+      <i class="fas fa-box text-purple-600 text-2xl"></i>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Chart Section -->
+ <!-- Chart Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+  <!-- Revenue Chart -->
+  <div class="bg-white rounded-2xl shadow px-6 pt-6 pb-8 h-80">
+    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+      <i class="fas fa-chart-line text-indigo-500 text-xl"></i>
+      <span>Revenue Trends</span>
+    </h3>
+    <div class="flex justify-center items-center max-h-[250px]">
+      <canvas id="revenueChart" width="200" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Client & Payment Insights -->
+  <div class="bg-white rounded-2xl shadow px-6 pt-6 pb-8 h-80">
+    <h3 class="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2 mb-4">
+      <i class="fas fa-users text-green-500 text-xl"></i>
+      <span>Client & Payment Insights</span>
+    </h3>
+
+    <!-- Summary Card -->
+    <div id="summaryCard" class="text-center text-sm font-semibold text-gray-700 mb-4">
+      <!-- Filled dynamically -->
+    </div>
+
+    <!-- Toggle Buttons -->
+    <div class="flex justify-center gap-3 mb-4">
+      <button onclick="showChart('clients')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:bg-indigo-700 transition flex items-center gap-1">
+        <i class="fas fa-user-tie"></i> <span>Top Clients</span>
+      </button>
+      <button onclick="showChart('payments')" class="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow hover:bg-yellow-600 transition flex items-center gap-1">
+        <i class="fas fa-credit-card"></i> <span>Payment Types</span>
+      </button>
+    </div>
+
+    <!-- Chart Canvas -->
+    <div class="flex justify-center items-start max-h-[200px]">
+      <canvas id="clientInsightsChart"></canvas>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Recent Payments Table -->
+  <div class="bg-white rounded-xl shadow-md overflow-x-auto border border-gray-100">
+    <table class="min-w-full text-sm text-gray-700 font-sans">
+      <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
+        <tr>
+          <th class="px-4 py-3">Client</th>
+          <th class="px-4 py-3">Type</th>
+          <th class="px-4 py-3">Amount</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Date</th>
+          <th class="px-4 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in recent_payments %}
+        <tr class="border-t hover:bg-gray-50 transition duration-150">
+          <td class="px-4 py-2 font-semibold text-gray-800">{{ payment.client.user.get_full_name }}</td>
+          <td class="px-4 py-2">{{ payment.get_payment_type_display }}</td>
+          <td class="px-4 py-2">{{ payment.amount }} {{ payment.currency }}</td>
+          <td class="px-4 py-2">
+            <span class="px-2 py-1 rounded-full text-xs font-medium 
+              {% if payment.status == 'completed' %}
+                bg-success-100 text-success-700
+              {% elif payment.status == 'pending' %}
+                bg-warning-100 text-warning-700
+              {% else %}
+                bg-gray-100 text-gray-700
+              {% endif %}">
+              {{ payment.get_status_display }}
+            </span>
+          </td>
+          <td class="px-4 py-2">{{ payment.created_at|date:"M d, Y" }}</td>
+          <td class="px-4 py-2">
+            <a href="{% url 'payments:detail' payment.pk %}" class="text-indigo-600 font-medium flex items-center space-x-1 hover:underline text-sm">
+              <i class="fas fa-eye"></i><span>View</span>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-4 py-4 text-center text-gray-500">No recent payments found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Chart.js + API Integration -->
+<script>
+  async function loadRevenueChart() {
+    try {
+      const response = await fetch('api/payments/revenue-trends/');
+      const data = await response.json();
+
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+gradient.addColorStop(0, '#155799'); // A solid, deep blue
+gradient.addColorStop(0.5, '#20aa3f'); // A vibrant green mid-tone
+gradient.addColorStop(1, 'rgba(186, 224, 162, 0.3)'); // A light, semi-transparent green
+
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Revenue (ETB)',
+            data: data.values,
+            backgroundColor: gradient,
+            borderRadius: 6,
+            barThickness: 24
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw.toLocaleString();
+                  return `ETB ${value}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                font: { size: 12 }
+              },
+              grid: { display: false }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'ETB ' + value.toLocaleString();
+                },
+                font: { size: 12 }
+              },
+              grid: {
+                color: 'rgba(0,0,0,0.05)'
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Failed to load chart data:', error);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadRevenueChart);
+</script>
+
+
+<script>
+  let chartInstance;
+
+  async function loadClientInsightsChart() {
+    const res = await fetch('api/payments/client-payment-insights/');
+    const data = await res.json();
+
+
+    const ctx = document.getElementById('clientInsightsChart').getContext('2d');
+
+    const clientLabels = data.top_clients.map(c => c.name);
+    const clientData = data.top_clients.map(c => c.revenue);
+    const paymentLabels = Object.keys(data.payment_types);
+    const paymentData = Object.values(data.payment_types);
+
+    const clientChartConfig = {
+      type: 'bar',
+      data: {
+        labels: clientLabels,
+        datasets: [{
+          label: 'Top Clients by Revenue',
+          data: clientData,
+          backgroundColor: 'rgba(99, 102, 241, 0.7)',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart'
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => `ETB ${ctx.raw.toLocaleString()}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => 'ETB ' + value.toLocaleString()
+            }
+          }
+        }
+      }
+    };
+
+    const paymentChartConfig = {
+      type: 'doughnut',
+      data: {
+        labels: paymentLabels,
+        datasets: [{
+          label: 'Payment Type Breakdown',
+          data: paymentData,
+backgroundColor: [
+  '#34D399', // Emerald
+  '#FBBF24', // Amber
+  '#60A5FA', // Sky Blue
+  '#F87171', // Soft Red
+  '#A78BFA'  // Violet
+]
+          
+        }]
+      },
+      options: {
+        responsive: true, 
+  animation: {
+          animateScale: true,
+          duration: 1000,
+          easing: 'easeOutBounce'
+        },
+        plugins: {
+            
+          legend: {
+            position: 'bottom',
+            labels: {
+    boxWidth: 10,           // Smaller color box
+    padding: 3,            // Space between labels
+    font: {
+      size: 13              // Adjust font size as needed
+    },
+  }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${ctx.raw}%`
+            }
+          }
+        }
+      }
+    };
+
+    // Store configs globally
+    window.clientChartConfig = clientChartConfig;
+    window.paymentChartConfig = paymentChartConfig;
+
+    // Default view
+    chartInstance = new Chart(ctx, clientChartConfig);
+  }
+
+  function showChart(type) {
+    if (!chartInstance) return;
+
+    chartInstance.destroy();
+    const ctx = document.getElementById('clientInsightsChart').getContext('2d');
+    chartInstance = new Chart(ctx, type === 'clients' ? window.clientChartConfig : window.paymentChartConfig);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadClientInsightsChart);
+</script>
+
+
+{% endblock %}

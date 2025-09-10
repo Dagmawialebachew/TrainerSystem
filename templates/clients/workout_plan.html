@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Workout Plans · {{ client_profile.user.first_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen  py-12">
+  <div class="max-w-6xl mx-auto px-4 space-y-10">
+
+    <!-- Page Header -->
+    <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 
+            sm:flex-row sm:items-center sm:justify-between overflow-hidden bg-white/80 backdrop-blur">
+  
+  <!-- Left: Page title -->
+  <div class="z-10">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-3">
+      <i class="fas fa-clipboard-list text-primary-400"></i>
+      Workout Plans
+    </h1>
+    <p class="text-gray-500 text-base sm:text-lg mt-1">
+      Here are all your current workout plans.
+    </p>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="flex flex-wrap gap-3 z-10">
+    <button
+      class="inline-flex items-center px-5 py-2 bg-primary-600 text-white text-sm font-semibold 
+             rounded-2xl shadow hover:bg-primary-700 active:scale-95 transition-transform"
+      onclick="alert('Request New Plan flow coming soon!')"
+    >
+      <i class="fas fa-file-medical-alt mr-2"></i>
+      Request New Plan
+    </button>
+  </div>
+
+</div>
+
+
+    {% if workout_plans %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+      {% for plan in workout_plans %}
+      <div class="relative flex flex-col bg-white/70 backdrop-blur-md rounded-3xl shadow-lg border border-gray-200
+                  overflow-hidden transform hover:scale-105 transition duration-300">
+
+        <!-- Top Accent Bar -->
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-500 to-primary-700"></div>
+
+        <!-- Status Ribbon -->
+        <span class="absolute top-4 right-4 inline-flex items-center gap-1 px-3 py-0.5 text-xs font-semibold 
+                     {% if plan.is_active %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}
+                     rounded-full"
+        >
+          <i class="fas fa-check-circle"></i>
+          {% if plan.is_active %}Active{% else %}Inactive{% endif %}
+        </span>
+
+        <!-- Card Body -->
+        <div class="p-6 flex-1 flex flex-col">
+          <h2 class="text-2xl font-semibold text-gray-900 flex items-center gap-2 mb-2">
+            <i class="fas fa-dumbbell text-primary-600"></i>
+            {{ plan.title }}
+          </h2>
+          <p class="text-sm text-gray-700 flex-1 mb-4">
+            {{ plan.description|default:"No description provided." }}
+          </p>
+
+          <!-- Details -->
+          <div class="space-y-2 text-gray-600 text-sm">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-calendar-alt text-primary-500"></i>
+              <span>Duration:</span>
+              <span class="font-medium text-gray-800">{{ plan.duration_weeks }} week</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-bolt text-yellow-500"></i>
+              <span>Intensity:</span>
+              <span class="font-medium text-gray-800">{{ plan.get_difficulty_display }}</span>
+            </div>
+          </div>
+           {% if plan.workout_structure %}
+    <div class="mt-4 w-full text-left text-sm text-primary-700">
+      <p class="font-semibold mb-1"><i class="fas fa-stream mr-1"></i>Structure Preview:</p>
+      <ul class="list-disc list-inside text-xs space-y-1">
+        {% for block in plan.workout_structure|slice:":2" %}
+          <li>{{ block.day }} – {{ block.exercises|length }} exercise{% if block.exercises|length > 1 %}s{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+          <!-- View Details Button -->
+          <div class="mt-6">
+            <a href="{% url 'clients:workout_plan_detail' plan.id %}"
+               class="inline-flex items-center gap-2 px-5 py-2 bg-white/90 text-primary-600 border border-primary-200
+                      rounded-full text-sm font-semibold shadow-sm hover:bg-white transition"
+            >
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-20">
+      <i class="fas fa-dumbbell fa-4x text-gray-300 mb-6"></i>
+      <p class="text-gray-500 text-lg mb-6">No workout plans available yet</p>
+      <button
+        class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-full font-semibold shadow-lg
+               hover:bg-primary-700 active:scale-95 transition-transform"
+        onclick="alert('Request a Plan feature coming soon!')"
+      >
+        <i class="fas fa-plus"></i>
+        Request a Plan
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

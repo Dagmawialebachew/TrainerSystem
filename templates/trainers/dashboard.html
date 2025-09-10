@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}Trainer Dashboard - {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-10 px-2 md:px-0">
+    <!-- Header -->
+   <div class="relative rounded-3xl px-6 py-6 sm:px-8 sm:py-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between overflow-hidden">
+  <!-- Left Section -->
+  <div class="z-10">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-primary-500 flex items-center gap-2">
+      <i class="fas fa-dumbbell text-primary-400"></i> Welcome back, {{ trainer_profile.user.first_name }}!
+    </h1>
+    <p class="text-gray-500 text-base sm:text-lg mt-1">{{ trainer_profile.business_name|default:"Your Fitness Business" }}</p>
+  </div>
+
+  <!-- Right Section: Actions -->
+  <div class="flex flex-wrap gap-3 z-10">
+    <a href="{% url 'trainers:add_client' %}" class="inline-flex items-center px-5 py-2 bg-white/80 text-primary text-sm font-semibold rounded-2xl shadow hover:bg-white/100 transition backdrop-blur">
+      <svg class="h-5 w-5 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Client
+    </a>
+    <a href="{% url 'workouts:create' %}" class="inline-flex items-center px-5 py-2 bg-primary-900/80 text-white text-sm font-semibold rounded-2xl shadow hover:bg-primary-900/100 transition backdrop-blur border border-white/20">
+      <svg class="h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+      Create Workout
+    </a>
+  </div>
+
+  <!-- Background Flair -->
+  <div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute -top-16 -right-32 w-96 h-96 bg-primary-100/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-primary-50/10 rounded-full blur-2xl"></div>
+  </div>
+</div>
+
+
+    <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+  {% for card in cards %}
+    <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+      <!-- Text Section -->
+      <div>
+        <h3 class="text-sm font-medium text-gray-500">{{ card.title }}</h3>
+        <p class="text-3xl font-bold text-gray-900">{{ card.value }}</p>
+      </div>
+
+      <!-- Icon Section -->
+      <div class="{{ card.color }} p-4 rounded-full">
+        {% if card.icon == 'users' %}
+          <i class="fas fa-users text-primary-600 text-2xl"></i>
+        {% elif card.icon == 'check-circle' %}
+          <i class="fas fa-check-circle text-green-700 text-2xl"></i>
+        {% elif card.icon == 'lightning-bolt' %}
+          <i class="fas fa-bolt text-blue-700 text-2xl"></i>
+        {% elif card.icon == 'clipboard-list' %}
+          <i class="fas fa-clipboard-list text-orange-700 text-2xl"></i>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+
+    <!-- Section Divider -->
+    <div class="flex items-center space-x-4 my-6">
+        <span class="flex-1 h-px bg-gradient-to-r from-transparent via-primary-200 to-transparent"></span>
+        <span class="text-primary-400 text-sm font-semibold tracking-widest uppercase">Activity</span>
+        <span class="flex-1 h-px bg-gradient-to-l from-transparent via-primary-200 to-transparent"></span>
+    </div>
+
+    <!-- Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Today’s Sessions -->
+    <div class="relative rounded-3xl bg-white/20 backdrop-blur-md border border-gray-200/30 shadow-lg">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/30">
+        <h3 class="text-lg font-semibold text-gray-900">Today’s Sessions</h3>
+        <a href="{% url 'schedule:calendar' %}"
+           class="inline-flex items-center text-sm text-primary-600 hover:text-primary-500">
+          View calendar
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+      <ul class="divide-y divide-gray-200">
+        {% for session in todays_sessions %}
+       <li class="flex items-center justify-between px-6 py-4">
+  <div>
+    <p class="text-sm font-medium text-gray-900">
+      {{ session.schedule.client.user.get_full_name }}
+    </p>
+    <p class="text-xs text-gray-500">
+      {{ session.start_time|time:"H:i" }} – {{ session.end_time|time:"H:i" }}
+    </p>
+
+    {% if now and session.start_time and session.end_time %}
+      {% if session.end_time < now %}
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold bg-gray-200 text-gray-700 mt-1">
+          Completed
+        </span>
+      {% elif session.start_time <= now and now <= session.end_time %}
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-700 mt-1">
+          In Progress
+        </span>
+      {% elif session.start_time > now %}
+        {% comment %} Calculate hours left manually in view {% endcomment %}
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700 mt-1">
+          Starts in {{ session.hours_until }}h
+        </span>
+      {% endif %}
+    {% endif %}
+
+    {% if session.session_type %}
+      <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold bg-primary-100 text-primary-700 mt-1">
+        {{ session.get_session_type_display }}
+      </span>
+    {% endif %}
+
+    {% if session.location %}
+      <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700 mt-1">
+        {{ session.location }}
+      </span>
+    {% endif %}
+  </div>
+
+  <a href="{% url 'schedule:session_detail' session.pk %}"
+     class="text-sm font-medium text-primary-600 hover:underline">
+    Details
+  </a>
+</li>
+
+        {% empty %}
+        <li class="px-6 py-8 text-center text-gray-500">
+          No sessions scheduled for today
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  <!-- Recent Clients -->
+  <div class="relative rounded-3xl bg-white/20 backdrop-blur-md border border-gray-200/30 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/30">
+      <h3 class="text-lg font-semibold text-gray-900">Recent Clients</h3>
+      <a href="{% url 'trainers:client_list' %}"
+         class="inline-flex items-center text-sm text-primary-600 hover:text-primary-500">
+        View all
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+    <ul class="divide-y divide-gray-200">
+      {% for client in recent_clients %}
+      <li class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center space-x-4">
+          {% if client.user.profile_picture %}
+          <img src="{{ client.user.profile_picture.url }}" alt=""
+               class="h-12 w-12 rounded-full border-2 border-primary-200 object-cover shadow-sm">
+          {% else %}
+          <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
+            {{ client.user.first_name.0 }}{{ client.user.last_name.0 }}
+          </div>
+          {% endif %}
+          <div>
+            <p class="text-sm font-medium text-gray-900">{{ client.user.get_full_name }}</p>
+            <p class="text-xs text-primary-500">{{ client.get_fitness_goal_display }}</p>
+          </div>
+        </div>
+        <a href="{% url 'trainers:client_detail' client.pk %}"
+           class="text-sm font-medium text-primary-600 hover:underline">
+          View
+        </a>
+      </li>
+      {% empty %}
+      <li class="px-6 py-8 text-center text-gray-500">
+        No clients yet.
+        <a href="{% url 'trainers:add_client' %}"
+           class="text-primary-500 underline hover:opacity-80">
+          Add your first client
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Recent Progress -->
+  <div class="relative rounded-3xl bg-white/20 backdrop-blur-md border border-gray-200/30 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/30">
+      <h3 class="text-lg font-semibold text-gray-900">Recent Progress</h3>
+      <a href="{% url 'progress:overview' %}"
+         class="inline-flex items-center text-sm text-primary-600 hover:text-primary-500">
+        View all
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+    <ul class="divide-y divide-gray-200">
+      {% for progress in recent_progress %}
+      <li class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-900">{{ progress.client.user.get_full_name }}</p>
+            <p class="text-xs text-gray-500">{{ progress.date|date:"M d, Y" }}</p>
+          </div>
+          <div class="flex space-x-2">
+            {% if progress.workout_completed %}
+            <span class="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
+              Workout ✓
+            </span>
+            {% endif %}
+            {% if progress.meal_plan_followed %}
+            <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">
+              Meal ✓
+            </span>
+            {% endif %}
+          </div>
+        </div>
+        {% if progress.notes %}
+        <p class="mt-2 text-xs text-gray-600 italic">{{ progress.notes|truncatewords:12 }}</p>
+        {% endif %}
+      </li>
+      {% empty %}
+      <li class="px-6 py-8 text-center text-gray-500">
+        No recent progress updates
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Recent Payments -->
+  <div class="relative rounded-3xl bg-white/20 backdrop-blur-md border border-gray-200/30 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200/30">
+      <h3 class="text-lg font-semibold text-gray-900">Recent Payments</h3>
+      <a href="{% url 'payments:dashboard' %}"
+         class="inline-flex items-center text-sm text-primary-600 hover:text-primary-500">
+        View all
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+    <ul class="divide-y divide-gray-200">
+      {% for payment in recent_payments %}
+      <li class="flex items-center justify-between px-6 py-4">
+        <div>
+          <p class="text-sm font-medium text-gray-900">{{ payment.plan_name|default:"Subscription" }}</p>
+          <p class="text-xs text-gray-500">{{ payment.paid_date|date:"M d, Y" }} · {{ payment.amount }} {{ payment.currency|default:"ETB" }}</p>
+        </div>
+        <span class="text-[10px] font-semibold uppercase bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+          {{ payment.status }}
+        </span>
+      </li>
+      {% empty %}
+      <li class="px-6 py-8 text-center text-gray-500">
+        No payments recorded yet
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+
+</div>
+```
+
+    <!-- Quick Actions -->
+    <div class="rounded-3xl shadow-xl bg-white/90 border border-white/50 backdrop-blur px-8 py-8 mt-10">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <a href="{% url 'workouts:create' %}" class="flex flex-col items-center p-6 max-md:p-2 rounded-2xl border border-primary-100 bg-primary-50/40 hover:bg-primary-100/60 hover:shadow-lg transition-all duration-200 group">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary-200 mb-2 group-hover:scale-110 transition-all duration-150">
+                    <svg class="h-6 w-6 text-primary-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <span class="text-sm font-semibold text-primary-900">Create Workout</span>
+            </a>
+            <a href="{% url 'nutrition:create' %}" class="flex flex-col items-center p-6 max-md:p-2 rounded-2xl border border-orange-100 bg-orange-50/40 hover:bg-orange-100/60 hover:shadow-lg transition-all duration-200 group">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-orange-200 mb-2 group-hover:scale-110 transition-all duration-150">
+                    <svg class="h-6 w-6 text-orange-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <span class="text-sm font-semibold text-orange-900">Create Meal Plan</span>
+            </a>
+          <a href="{% url 'messaging:create' %}"
+   class="flex flex-col items-center p-6 max-md:p-2 rounded-2xl border border-blue-100 bg-blue-50/40 hover:bg-blue-100/60 hover:shadow-lg transition-all duration-200 group"
+   data-soon="true">
+    <div class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-200 mb-2 group-hover:scale-110 transition-all duration-150">
+        <svg class="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+    </div>
+    <span class="text-sm font-semibold text-blue-900">Send Message</span>
+</a>
+
+            <a href="{% url 'progress:overview' %}" class="flex flex-col items-center p-6 max-md:p-2 rounded-2xl border border-purple-100 bg-purple-50/40 hover:bg-purple-100/60 hover:shadow-lg transition-all duration-200 group">
+                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-purple-200 mb-2 group-hover:scale-110 transition-all duration-150">
+                    <svg class="h-6 w-6 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <span class="text-sm font-semibold text-purple-900">Analytics</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Package Info -->
+    <div class="rounded-3xl shadow-xl bg-gradient-to-r from-primary-600/90 via-primary-400/80 to-primary-800/90 px-8 py-8 text-white flex flex-col md:flex-row md:items-center md:justify-between mt-10">
+        <div>
+            <h3 class="text-xl font-bold">{{ trainer_profile.get_package_display }}</h3>
+            <p class="text-primary-100 text-base mt-1">{{ trainer_profile.client_count }} / {% if trainer_profile.package == 'basic' %}10{% elif trainer_profile.package == 'pro' %}50{% else %}200{% endif %} clients</p>
+        </div>
+        {% if not trainer_profile.can_add_clients %}
+        <div class="mt-6 md:mt-0">
+            <a href="{% url 'trainers:settings' %}" class="bg-white/90 text-primary px-6 py-2 rounded-2xl font-semibold text-sm hover:bg-white transition-all duration-150 shadow-md">
+                Upgrade Plan
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('[data-soon="true"]').forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        alert("🚧 Messaging is coming soon!");
+      });
+    });
+  });
+</script>
+
+{% endblock %}

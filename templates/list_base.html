@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row items-center justify-between bg-white shadow-lg rounded-2xl p-6 gap-4">
+        <h1 class="text-3xl font-bold text-primary-900 tracking-wide">{% block list_title %}List{% endblock %}</h1>
+        {% block header_actions %}{% endblock %}
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+        <input type="text" name="search"
+               placeholder="Search..."
+               value="{{ request.GET.search }}"
+               class="w-full sm:w-auto flex-1 border border-primary-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary-400 focus:outline-none shadow-sm transition">
+        <button type="submit"
+                class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-6 py-2 rounded-xl font-medium hover:scale-105 transition shadow-md flex items-center space-x-2">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </button>
+    </form>
+
+    <!-- View Tabs -->
+    <div class="flex space-x-4 border-b border-primary-200 mb-4">
+        <button id="cardsTab" class="px-4 py-2 font-medium text-primary-700 border-b-2 border-primary-500 focus:outline-none transition">{% block cards_tab_name %}Cards View{% endblock %}</button>
+        <button id="tableTab" class="px-4 py-2 font-medium text-primary-400 border-b-2 border-transparent focus:outline-none hover:text-primary-700 transition">{% block table_tab_name %}Table View{% endblock %}</button>
+    </div>
+
+    <!-- Cards View -->
+    <div id="cardsView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% block cards_view %}{% endblock %}
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView" class="hidden bg-white shadow-lg rounded-2xl overflow-x-auto">
+        {% block table_view %}{% endblock %}
+    </div>
+
+    <!-- Pagination -->
+    {% block pagination %}{% endblock %}
+
+</div>
+
+<script>
+const cardsTab = document.getElementById('cardsTab');
+const tableTab = document.getElementById('tableTab');
+const cardsView = document.getElementById('cardsView');
+const tableView = document.getElementById('tableView');
+
+cardsTab.addEventListener('click', () => {
+    cardsView.classList.remove('hidden');
+    tableView.classList.add('hidden');
+    cardsTab.classList.add('border-primary-500', 'text-primary-900', 'font-semibold');
+    tableTab.classList.remove('border-primary-500', 'text-primary-900', 'font-semibold');
+    tableTab.classList.add('text-primary-400');
+});
+
+tableTab.addEventListener('click', () => {
+    tableView.classList.remove('hidden');
+    cardsView.classList.add('hidden');
+    tableTab.classList.add('border-primary-500', 'text-primary-900', 'font-semibold');
+    cardsTab.classList.remove('border-primary-500', 'text-primary-900', 'font-semibold');
+    cardsTab.classList.add('text-primary-400');
+});
+</script>
+{% endblock %}

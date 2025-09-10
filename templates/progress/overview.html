@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Progress Dashboard - TrainingSystem{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6">
+
+  <!-- Header -->
+<div class="relative rounded-3xl px-6 max-md:px-0 py-6 sm:py-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between overflow-hidden">
+  <!-- Left Section -->
+  <div class="z-10">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-yellow-600 flex items-center gap-2">
+      <i class="fas fa-bullseye text-yellow-500"></i> Progress Dashboard
+    </h1>
+    <p class="text-gray-500 text-base sm:text-lg mt-1">Welcome back, {{ user.get_full_name|default:user.username }}</p>
+  </div>
+
+  <!-- Right Section: Actions -->
+  <div class="flex flex-wrap gap-3 z-10">
+    <a href="{% url 'progress:list' %}" class="inline-flex items-center px-5 py-2 bg-yellow-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-yellow-700 transition">
+      <i class="fas fa-list mr-2"></i> Progress List
+    </a>
+    <a href="{% url 'progress:add_progress' %}" class="inline-flex items-center px-5 py-2 bg-green-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-green-700 transition">
+      <i class="fas fa-plus-circle mr-2"></i> Add Progress
+    </a>
+    <a href="{% url 'progress:goal_list' %}" class="inline-flex items-center px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-2xl shadow hover:bg-indigo-700 transition">
+      <i class="fas fa-list-alt mr-2"></i> Goal List
+    </a>
+    <a href="{% url 'progress:create_goal' %}" class="inline-flex items-center px-5 py-2 bg-yellow-500 text-white text-sm font-semibold rounded-2xl shadow hover:bg-yellow-600 transition">
+      <i class="fas fa-edit mr-2"></i> Create Goal
+    </a>
+  </div>
+
+  <!-- Background Flair -->
+  <div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute -top-16 -right-32 w-96 h-96 bg-yellow-100/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-50/10 rounded-full blur-2xl"></div>
+  </div>
+</div>
+
+
+  <!-- KPI Cards -->
+ <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+  <!-- Total Clients -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Total Clients</h3>
+      <p class="text-3xl font-bold text-blue-600" id="totalClients">—</p>
+    </div>
+    <div class="bg-blue-100 p-4 rounded-full">
+      <i class="fas fa-users text-blue-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Workout Success Rate -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Workout Success Rate</h3>
+      <p class="text-3xl font-bold text-green-600" id="avgWorkout">—%</p>
+    </div>
+    <div class="bg-green-100 p-4 rounded-full">
+      <i class="fas fa-dumbbell text-green-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Meal Success Rate -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Meal Success Rate</h3>
+      <p class="text-3xl font-bold text-purple-600" id="avgMeal">—%</p>
+    </div>
+    <div class="bg-purple-100 p-4 rounded-full">
+      <i class="fas fa-utensils text-purple-600 text-2xl"></i>
+    </div>
+  </div>
+
+  <!-- Progress Entries -->
+  <div class="bg-white rounded-2xl shadow p-6 flex items-center justify-between hover:shadow-lg transition">
+    <div>
+      <h3 class="text-sm font-medium text-gray-500">Progress Entries</h3>
+      <p class="text-3xl font-bold text-red-600" id="totalEntries">—</p>
+    </div>
+    <div class="bg-red-100 p-4 rounded-full">
+      <i class="fas fa-clipboard-list text-red-600 text-2xl"></i>
+    </div>
+  </div>
+</div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <div class="bg-white rounded-2xl shadow px-6 py-8 max-md:py-2 max-md:px-3 h-80 max-md:h-max">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <i class="fas fa-chart-line mr-2 text-gray-500"></i> Workout vs Meal Success Rate
+      </h3>
+      <canvas id="adherenceTrendChart"></canvas>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow px-6 py-8 max-md:py-2 max-md:px-3 h-80 max-md:h-max">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <i class="fas fa-chart-bar mr-2 text-gray-500"></i> Energy & Sleep Distribution
+      </h3>
+      <canvas id="energySleepChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Progress Table -->
+<div class="bg-white rounded-xl shadow ring-1 ring-black ring-opacity-5 overflow-x-auto">
+  <table class="min-w-full table-auto divide-y divide-gray-200 text-sm text-gray-700">
+    <thead class="bg-gray-50 sticky top-0 z-10">
+      <tr>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Client
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Date
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Workout
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Meal
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Energy
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Sleep
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Stress
+        </th>
+      </tr>
+    </thead>
+
+    <tbody class="bg-white divide-y divide-gray-200">
+      {% for entry in recent_progress %}
+      <tr class="hover:bg-gray-50 transition-colors duration-150">
+        <!-- Client Name -->
+        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+          {{ entry.client.user.get_full_name }}
+        </td>
+
+        <!-- Date -->
+        <td class="px-6 py-4 whitespace-nowrap text-gray-700">
+          {{ entry.date }}
+        </td>
+
+        <!-- Workout Adherence -->
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+            {% if entry.workout_completed %}
+              bg-green-100 text-green-800
+            {% else %}
+              bg-red-100 text-red-800
+            {% endif %}">
+            {% if entry.workout_completed %}Completed{% else %}Missed{% endif %}
+          </span>
+        </td>
+
+        <!-- Meal Adherence -->
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+            {% if entry.meal_plan_followed %}
+              bg-green-100 text-green-800
+            {% else %}
+              bg-red-100 text-red-800
+            {% endif %}">
+            {% if entry.meal_plan_followed %}Followed{% else %}Skipped{% endif %}
+          </span>
+        </td>
+
+        <!-- Energy Level -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.energy_level == 3 %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">High</span>
+          {% elif entry.energy_level == 2 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Moderate</span>
+          {% else %}
+            <span class="inline-flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Low</span>
+          {% endif %}
+        </td>
+
+        <!-- Sleep Hours -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.sleep_hours < 6 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Low
+            </span>
+          {% elif entry.sleep_hours >= 8 %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Rested
+            </span>
+          {% else %}
+            <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+              {{ entry.sleep_hours }}h • Moderate
+            </span>
+          {% endif %}
+        </td>
+
+        <!-- Stress Level -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm">
+          {% if entry.stress_level == 3 %}
+            <span class="inline-flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">High</span>
+          {% elif entry.stress_level == 2 %}
+            <span class="inline-flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Moderate</span>
+          {% else %}
+            <span class="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Low</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-6 py-8 text-center text-gray-500 italic">
+          No entries found.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+</div>
+
+<script>
+  async function loadDashboardData() {
+    try {
+      const response = await fetch('api/overview/');
+      const data = await response.json();
+      // Update the totalClients element with the total number of clients
+
+      // Adherence Trend Chart
+      const adherenceTrendCtx = document.getElementById('adherenceTrendChart').getContext('2d');
+      new Chart(adherenceTrendCtx, {
+        type: 'line',
+        data: {
+          labels: data.adherence_labels,
+          datasets: [
+            {
+              label: 'Workout',
+              data: data.workout_data,
+              borderColor: '#34D399',
+              backgroundColor: 'rgba(52, 211, 153, 0.2)',
+              tension: 0.4
+            },
+            {
+              label: 'Meal',
+              data: data.meal_data,
+              borderColor: '#A78BFA',
+              backgroundColor: 'rgba(167, 139, 250, 0.2)',
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      // Energy & Sleep Chart
+      const energySleepCtx = document.getElementById('energySleepChart').getContext('2d');
+      new Chart(energySleepCtx, {
+        type: 'bar',
+        data: {
+          labels: data.energy_sleep_labels,
+          datasets: [
+            {
+              label: 'Energy Level',
+              data: data.energy_data,
+              backgroundColor: '#60A5FA'
+            },
+            {
+              label: 'Sleep Hours',
+              data: data.sleep_data,
+              backgroundColor: '#FBBF24'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      // Optional: Inject KPI stats into DOM
+      document.getElementById('totalClients').textContent = data.progress_stats.total_clients;
+      document.getElementById('avgWorkout').textContent = data.progress_stats.avg_workout_adherence + '%';
+      document.getElementById('avgMeal').textContent = data.progress_stats.avg_meal_adherence + '%';
+      document.getElementById('totalEntries').textContent = data.progress_stats.total_entries;
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboardData);
+</script>
+
+{% endblock %}

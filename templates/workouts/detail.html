@@ -1,0 +1,68 @@
+{% extends 'detail_base.html' %}
+
+{% block detail_title %}{{ workout_plan.title }}{% endblock %}
+{% block detail_subtitle %}Client: {{ workout_plan.client.user.get_full_name }}{% endblock %}
+{% block back_url %}{% url 'workouts:list' %}{% endblock %}
+{% block detail_initials %}{{ workout_plan.client.user.first_name.0 }}{{ workout_plan.client.user.last_name.0 }}{% endblock %}
+
+{% block detail_sections %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+  <!-- 📋 Plan Info -->
+  <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-4">Plan Info</h3>
+    <div class="space-y-2 text-sm text-primary-800">
+      <p><strong>Client:</strong> {{ workout_plan.client.user.get_full_name }}</p>
+      <p><strong>Difficulty:</strong> {{ workout_plan.get_difficulty_display }}</p>
+      <p><strong>Duration:</strong> {{ workout_plan.duration_weeks }} weeks</p>
+      <p><strong>Description:</strong> {% if workout_plan.description %}{{ workout_plan.description }}{% else %}—{% endif %}</p>
+      {% if workout_plan.ai_enhanced %}
+        <p><strong>AI Suggestions:</strong> {% if workout_plan.ai_suggestions %}{{ workout_plan.ai_suggestions }}{% else %}—{% endif %}</p>
+      {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-5 flex flex-wrap gap-2">
+      <a href="{% url 'workouts:edit' workout_plan.pk %}" class="btn-icon bg-warning-500 text-white">
+        <i class="fas fa-edit mr-1"></i> Edit
+      </a>
+      <a href="{% url 'workouts:delete' workout_plan.pk %}" class="btn-icon bg-red-500 text-white">
+        <i class="fas fa-trash-alt mr-1"></i> Delete
+      </a>
+    </div>
+  </div>
+
+  <!-- 🏋️ Workout Structure -->
+ <!-- 🏋️ Workout Structure -->
+<div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition mt-6">
+  <h3 class="text-xl font-semibold text-primary-900 mb-4">Workout Structure</h3>
+
+  {% if workout_structure %}
+    <div class="space-y-6">
+      {% for day_block in workout_structure %}
+        <div class="bg-primary-50 p-4 rounded-xl">
+          <h4 class="text-lg font-semibold text-primary-700 mb-2">{{ day_block.day }}</h4>
+
+          {% if day_block.exercises %}
+            <ul class="space-y-2 text-sm text-primary-800">
+              {% for exercise in day_block.exercises %}
+                <li class="bg-white border border-primary-100 rounded-lg p-3 shadow-sm hover:shadow-md transition">
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium">{{ exercise.name }}</span>
+                    <span class="text-xs text-gray-500">Sets: {{ exercise.sets }} | Reps: {{ exercise.reps }}</span>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-primary-400 italic text-sm">No exercises listed for this day.</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-primary-400 text-sm">No workout structure defined yet.</p>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

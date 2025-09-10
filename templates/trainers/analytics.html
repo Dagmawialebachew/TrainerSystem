@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - {{ branding.brand_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg p-6 flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900">Analytics</h1>
+        <p class="text-sm text-gray-500">Last 30 days</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white shadow rounded-lg p-5">
+            <dt class="text-sm font-medium text-gray-500 truncate">Monthly Progress Entries</dt>
+            <dd class="text-lg font-medium text-gray-900 mt-2">{{ monthly_progress_entries }}</dd>
+        </div>
+        <div class="bg-white shadow rounded-lg p-5">
+            <dt class="text-sm font-medium text-gray-500 truncate">Average Workout Adherence</dt>
+            <dd class="text-lg font-medium text-gray-900 mt-2">
+                {{ client_adherence_avg.avg_workout|default:"0" }}%
+            </dd>
+        </div>
+        <div class="bg-white shadow rounded-lg p-5">
+            <dt class="text-sm font-medium text-gray-500 truncate">Average Meal Plan Adherence</dt>
+            <dd class="text-lg font-medium text-gray-900 mt-2">
+                {{ client_adherence_avg.avg_meal|default:"0" }}%
+            </dd>
+        </div>
+    </div>
+
+    <!-- Optional Charts or Graphs Placeholder -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Progress Overview</h3>
+        <p class="text-gray-500">Charts and visualizations can go here (e.g., line chart of workouts & meals over time).</p>
+    </div>
+
+</div>
+{% endblock %}

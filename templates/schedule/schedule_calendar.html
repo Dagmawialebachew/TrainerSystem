@@ -1,0 +1,790 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-4 sm:p-6">
+  <!-- Header -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Client Schedule</h1>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- View toggles -->
+      <div class="flex bg-gray-100 rounded-full p-1 shadow-inner" role="tablist" aria-label="Calendar views">
+        <button id="btn-month" class="px-3 py-1.5 text-sm font-medium rounded-full bg-primary-600 text-white" role="tab" aria-selected="true">Month</button>
+        <button id="btn-week" class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:bg-gray-200" role="tab" aria-selected="false">Week</button>
+        <button id="btn-day" class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:bg-gray-200" role="tab" aria-selected="false">Day</button>
+        <button id="btn-list" class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-700 hover:bg-gray-200" role="tab" aria-selected="false">List</button>
+      </div>
+
+      <!-- Date navigation -->
+      <div class="flex items-center gap-2">
+        <button id="btn-today" class="px-3 py-1.5 text-sm font-medium rounded-md border text-gray-700 hover:bg-gray-100">Today</button>
+        <button id="btn-prev" class="px-2 py-1.5 text-sm font-medium rounded-md border text-gray-700 hover:bg-gray-100" aria-label="Previous">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="btn-next" class="px-2 py-1.5 text-sm font-medium rounded-md border text-gray-700 hover:bg-gray-100" aria-label="Next">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Month/year display -->
+      <div id="currentLabel" class="text-sm font-semibold text-gray-800 select-none min-w-[10ch] text-center"></div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <div class="text-sm text-gray-600">Filter:</div>
+    <label class="inline-flex items-center gap-2 text-sm">
+      <input type="checkbox" class="status-filter accent-primary-600" value="approved" checked>
+      <span class="px-2 py-0.5 rounded-full text-white bg-green-500 text-xs">Approved</span>
+    </label>
+    <label class="inline-flex items-center gap-2 text-sm">
+      <input type="checkbox" class="status-filter accent-primary-600" value="pending" checked>
+      <span class="px-2 py-0.5 rounded-full text-white bg-yellow-500 text-xs">Pending</span>
+    </label>
+    <label class="inline-flex items-center gap-2 text-sm">
+      <input type="checkbox" class="status-filter accent-primary-600" value="unknown" checked>
+      <span class="px-2 py-0.5 rounded-full text-white bg-gray-400 text-xs">Unknown</span>
+    </label>
+
+    <!-- Optional: simple search by client -->
+    <div class="ml-auto flex items-center gap-2">
+      <i class="fas fa-search text-gray-400"></i>
+      <input id="searchClient" type="text" placeholder="Search client…" class="text-sm border rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-400">
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="mt-6 flex items-center gap-3 text-gray-600">
+    <svg class="w-5 h-5 animate-spin text-primary-600" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z"/>
+    </svg>
+    <span class="text-sm">Loading sessions…</span>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="hidden mt-6 text-center p-8 bg-white rounded-2xl border">
+    <i class="fas fa-calendar-times text-3xl text-gray-300"></i>
+    <p class="mt-2 text-gray-700 font-semibold">No sessions in this range</p>
+    <p class="text-gray-500 text-sm">Try adjusting filters or navigation.</p>
+  </div>
+
+  <!-- Month view -->
+  <section id="view-month" class="mt-6 bg-white rounded-2xl shadow p-4">
+    <div class="grid grid-cols-7 gap-3 text-xs font-semibold text-gray-500 uppercase">
+      <div class="text-center">Mon</div>
+      <div class="text-center">Tue</div>
+      <div class="text-center">Wed</div>
+      <div class="text-center">Thu</div>
+      <div class="text-center">Fri</div>
+      <div class="text-center">Sat</div>
+      <div class="text-center">Sun</div>
+    </div>
+    <div id="monthGrid" class="mt-3 grid grid-cols-7 gap-3"></div>
+  </section>
+
+  <!-- Week view -->
+  <section id="view-week" class="hidden mt-6 bg-white rounded-2xl shadow overflow-hidden">
+    <div class="grid grid-cols-8 border-b bg-gray-50 text-xs text-gray-600">
+      <div class="p-2"></div>
+      <div class="p-2 text-center">Mon</div>
+      <div class="p-2 text-center">Tue</div>
+      <div class="p-2 text-center">Wed</div>
+      <div class="p-2 text-center">Thu</div>
+      <div class="p-2 text-center">Fri</div>
+      <div class="p-2 text-center">Sat</div>
+      <div class="p-2 text-center">Sun</div>
+    </div>
+    <div id="weekGrid" class="grid grid-cols-8 max-h-[70vh] overflow-auto">
+      <!-- column 0 = hours -->
+      <div id="week-hours" class="border-r bg-gray-50 text-xs text-gray-500 sticky left-0 top-0">
+        <!-- hours injected by JS -->
+      </div>
+      <!-- columns 1..7 days injected by JS -->
+      <div id="week-col-1" class="border-r relative"></div>
+      <div id="week-col-2" class="border-r relative"></div>
+      <div id="week-col-3" class="border-r relative"></div>
+      <div id="week-col-4" class="border-r relative"></div>
+      <div id="week-col-5" class="border-r relative"></div>
+      <div id="week-col-6" class="border-r relative"></div>
+      <div id="week-col-7" class="relative"></div>
+    </div>
+  </section>
+
+  <!-- Day view -->
+  <section id="view-day" class="hidden mt-6 bg-white rounded-2xl shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+      <h2 id="dayLabel" class="text-lg font-semibold text-gray-800"></h2>
+      <button id="backToMonth" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-100">← Back</button>
+    </div>
+    <div id="dayGrid" class="relative max-h-[70vh] overflow-auto border rounded-lg">
+      <!-- hourly rows injected by JS -->
+    </div>
+  </section>
+
+  <!-- List view -->
+  <section id="view-list" class="hidden mt-6">
+<div class="w-full">
+  <!-- Search / Filter Bar -->
+  <div class="flex flex-col md:flex-row gap-2 mb-4 items-start md:items-center justify-between">
+    <input type="text" id="sessionSearch" placeholder="Search sessions..." 
+           class="p-2 border rounded-lg w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <select id="statusFilter" class="p-2 border rounded-lg w-full md:w-1/5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <option value="">All Statuses</option>
+      <option value="completed">Completed</option>
+      <option value="pending">Pending</option>
+      <option value="canceled">Canceled</option>
+    </select>
+  </div>
+
+  <!-- Table container -->
+  <div id="listContainer" class="w-full overflow-x-auto min-h-[200px] relative"></div>
+
+  <!-- Pagination controls -->
+  <div id="pagination" class="flex justify-center items-center gap-2 mt-4"></div>
+</div>
+  </section>
+</div>
+
+<!-- Modal: session details -->
+<div id="sessionModal" class="hidden fixed inset-0 z-50">
+  <div class="absolute inset-0 bg-black/40"></div>
+  <div class="relative max-w-lg mx-auto mt-24 bg-white rounded-2xl shadow-lg p-6">
+    <div class="flex items-start justify-between">
+      <h3 id="modalTitle" class="text-lg font-semibold text-gray-900"></h3>
+      <button id="modalClose" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="mt-3 text-sm text-gray-600 space-y-1" id="modalBody"></div>
+    <div class="mt-6 flex justify-end gap-2">
+      <a id="modalOpen" href="#" class="px-3 py-1.5 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700">Open</a>
+      <button id="modalDismiss" class="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-100">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // State
+  let viewMode = "month"; // month | week | day | list
+  let currentDate = new Date();
+  let sessions = [];
+  let statusFilter = new Set(["approved", "pending", "unknown"]);
+  let clientQuery = "";
+
+  // Elements
+  const el = (id) => document.getElementById(id);
+  const currentLabel = el("currentLabel");
+  const loading = el("loading");
+  const emptyState = el("emptyState");
+
+  const viewMonth = el("view-month");
+  const monthGrid = el("monthGrid");
+  const viewWeek = el("view-week");
+  const weekGrid = el("weekGrid");
+  const weekHours = el("week-hours");
+  const viewDay = el("view-day");
+  const dayLabel = el("dayLabel");
+  const dayGrid = el("dayGrid");
+  const viewList = el("view-list");
+  const listContainer = el("listContainer");
+
+  const btnMonth = el("btn-month");
+  const btnWeek = el("btn-week");
+  const btnDay = el("btn-day");
+  const btnList = el("btn-list");
+  const btnPrev = el("btn-prev");
+  const btnNext = el("btn-next");
+  const btnToday = el("btn-today");
+  const backToMonth = el("backToMonth");
+  const searchClient = el("searchClient");
+
+  // Modal
+  const sessionModal = el("sessionModal");
+  const modalTitle = el("modalTitle");
+  const modalBody = el("modalBody");
+  const modalOpen = el("modalOpen");
+  const modalClose = el("modalClose");
+  const modalDismiss = el("modalDismiss");
+
+  // Helpers
+  const pad = (n) => String(n).padStart(2, "0");
+  const fmtDate = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parseYMD = (s) => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+  const startOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
+  const endOfMonth = (d) => new Date(d.getFullYear(), d.getMonth()+1, 0);
+  const startOfWeekMon = (d) => { const c = new Date(d); const day = (c.getDay() + 6) % 7; c.setDate(c.getDate()-day); c.setHours(0,0,0,0); return c; };
+  const addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate()+n); return c; };
+  const isSameDay = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  const humanMonth = (d) => d.toLocaleString(undefined, { month: "long", year: "numeric" });
+
+  const statusClass = (status) => {
+    const s = (status || "").toLowerCase();
+    if (s === "approved" || s === "confirmed") return "bg-green-500";
+    if (s === "pending") return "bg-yellow-500";
+    return "bg-gray-400";
+  };
+
+  const passesFilters = (s) => {
+    const st = (s.status || "unknown").toLowerCase();
+    if (!statusFilter.has(st)) return false;
+    if (clientQuery && !s.client_name?.toLowerCase().includes(clientQuery)) return false;
+    return true;
+  };
+
+  // Overlap layout helpers
+function toMinutes(t) {
+  const [hh = "0", mm = "0"] = (t || "00:00").split(":");
+  return parseInt(hh, 10) * 60 + parseInt(mm, 10);
+}
+
+// Given sessions of a single day, assign column and total columns per overlap cluster
+function layoutOverlaps(daySessions) {
+  // Normalize with numeric times
+  const items = daySessions.map(s => ({
+    ...s,
+    _start: toMinutes(s.start_time || "00:00"),
+    _end: toMinutes(s.end_time || "00:00") || toMinutes(s.start_time || "00:00") + 60
+  })).sort((a, b) => a._start - b._start || a._end - b._end);
+
+  // Sweep line to assign columns within clusters
+  let active = [];      // [{_end, col, ref}]
+  let cluster = [];     // holds sessions in current cluster
+  const clusters = [];  // array of clusters, each with items
+
+  function flushCluster() {
+    if (cluster.length) clusters.push(cluster), cluster = [];
+  }
+
+  items.forEach(item => {
+    // end non-overlapping from active
+    active = active.filter(a => a._end > item._start);
+
+    // if no active, previous cluster ended
+    if (active.length === 0 && cluster.length) flushCluster();
+
+    // pick the smallest available column index
+    const usedCols = new Set(active.map(a => a.col));
+    let col = 0;
+    while (usedCols.has(col)) col++;
+
+    item._col = col;
+    active.push({ _end: item._end, col, ref: item });
+    cluster.push(item);
+  });
+
+  flushCluster();
+
+  // annotate each item with total columns in its cluster
+  clusters.forEach(group => {
+    const maxCol = Math.max(...group.map(g => g._col));
+    const colCount = maxCol + 1;
+    group.forEach(g => g._colCount = colCount);
+  });
+
+  return items;
+}
+
+// Compute horizontal position with a small gutter between columns
+function colPositionStyle(col, colCount, gutterPx = 4) {
+  const totalGutter = Math.max(0, (colCount - 1) * gutterPx);
+  const width = `calc((100% - ${totalGutter}px) / ${colCount})`;
+  const left = col === 0 ? "0px" : `calc(${width} * ${col} + ${gutterPx * col}px)`;
+  return { left, width };
+}
+
+
+  function setActiveTab(button) {
+    [btnMonth, btnWeek, btnDay, btnList].forEach(b=>{
+      b.classList.remove("bg-primary-600","text-white");
+      b.classList.add("text-gray-700");
+      b.setAttribute("aria-selected","false");
+    });
+    button.classList.add("bg-primary-600","text-white");
+    button.classList.remove("text-gray-700");
+    button.setAttribute("aria-selected","true");
+  }
+
+  function showView(mode) {
+    viewMode = mode;
+    viewMonth.classList.add("hidden");
+    viewWeek.classList.add("hidden");
+    viewDay.classList.add("hidden");
+    viewList.classList.add("hidden");
+    if (mode === "month") { viewMonth.classList.remove("hidden"); setActiveTab(btnMonth); renderMonth(); }
+    else if (mode === "week") { viewWeek.classList.remove("hidden"); setActiveTab(btnWeek); renderWeek(); }
+    else if (mode === "day") { viewDay.classList.remove("hidden"); setActiveTab(btnDay); renderDay(currentDate); }
+    else { viewList.classList.remove("hidden"); setActiveTab(btnList); renderList(); }
+  }
+
+  function setLabel() {
+    if (viewMode === "month") currentLabel.textContent = humanMonth(currentDate);
+    else if (viewMode === "week") {
+      const start = startOfWeekMon(currentDate);
+      const end = addDays(start, 6);
+      currentLabel.textContent = `${start.toLocaleDateString()} – ${end.toLocaleDateString()}`;
+    } else if (viewMode === "day") {
+      currentLabel.textContent = currentDate.toDateString();
+    } else {
+      currentLabel.textContent = "All Sessions";
+    }
+  }
+
+  // Data fetching
+  async function fetchSessionsForRange(startDate, endDate) {
+    loading.classList.remove("hidden");
+    emptyState.classList.add("hidden");
+    try {
+      const start = fmtDate(startDate);
+      const end = fmtDate(endDate);
+      const res = await fetch(`/api/schedule/sessions/?start=${start}&end=${end}`);
+      const data = await res.json();
+      sessions = Array.isArray(data) ? data : [];
+      applyViewRender();
+    } catch (e) {
+      console.error("Failed to load sessions", e);
+      sessions = [];
+      applyViewRender();
+    } finally {
+      loading.classList.add("hidden");
+    }
+  }
+
+  function applyViewRender() {
+    setLabel();
+    if (viewMode === "month") renderMonth();
+    if (viewMode === "week") renderWeek();
+    if (viewMode === "day") renderDay(currentDate);
+    if (viewMode === "list") renderList();
+    const anyVisible = sessions.some(passesFilters);
+    emptyState.classList.toggle("hidden", anyVisible);
+  }
+
+  // Month view render
+  function renderMonth() {
+    monthGrid.innerHTML = "";
+    const first = startOfMonth(currentDate);
+    const last = endOfMonth(currentDate);
+    const daysInMonth = last.getDate();
+
+    // Monday-start offset
+    const offset = (first.getDay() + 6) % 7;
+
+    // Build 42 cells (6 weeks * 7 days) for consistency
+    for (let i=0; i<offset; i++) {
+      const cell = document.createElement("div");
+      cell.className = "border rounded-lg p-2 h-28 bg-gray-50";
+      monthGrid.appendChild(cell);
+    }
+
+    for (let day=1; day<=daysInMonth; day++) {
+      const date = new Date(first.getFullYear(), first.getMonth(), day);
+      const cell = document.createElement("div");
+      const isToday = isSameDay(date, new Date());
+      cell.className = "border rounded-lg p-2 h-28 bg-gray-50 hover:bg-gray-100 transition relative cursor-pointer";
+      cell.setAttribute("role","button");
+      cell.setAttribute("aria-label", date.toDateString());
+
+      const badge = document.createElement("span");
+      badge.className = "text-xs font-bold";
+      badge.textContent = day;
+      badge.classList.add(isToday ? "text-primary-700" : "text-gray-500");
+      if (isToday) {
+        badge.classList.add("px-1","rounded","ring-2","ring-primary-300");
+      }
+      cell.appendChild(badge);
+
+      const stack = document.createElement("div");
+      stack.className = "flex flex-col gap-1 mt-1 text-xs";
+      cell.appendChild(stack);
+
+      const dayStr = fmtDate(date);
+      const todays = sessions.filter(s => s.date === dayStr && passesFilters(s));
+      todays.slice(0,3).forEach(s => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = `px-1 py-0.5 rounded text-white text-[11px] font-medium ${statusClass(s.status)} truncate text-left`;
+        const time = (s.start_time || "").slice(0,5);
+        pill.textContent = `${time} ${s.client_name || ""}`;
+        pill.title = `${s.workout_plan_title || "Session"} (${s.start_time || ""} - ${s.end_time || ""})`;
+        pill.addEventListener("click", (e)=>{ e.stopPropagation(); openModal(s); });
+        stack.appendChild(pill);
+      });
+      if (todays.length > 3) {
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "text-xs text-gray-500 hover:underline";
+        more.textContent = `+${todays.length - 3} more`;
+        more.addEventListener("click", (e)=>{ e.stopPropagation(); showView('day'); currentDate = date; setLabel(); renderDay(date); });
+        stack.appendChild(more);
+      }
+
+      cell.addEventListener("click", ()=> { currentDate = date; showView("day"); });
+      monthGrid.appendChild(cell);
+    }
+
+    // Fill trailing cells to complete the grid
+    const cellsNeeded = 42 - (offset + daysInMonth);
+    for (let i=0; i<cellsNeeded; i++) {
+      const cell = document.createElement("div");
+      cell.className = "border rounded-lg p-2 h-28 bg-gray-50";
+      monthGrid.appendChild(cell);
+    }
+  }
+
+  // Week view render
+  function renderWeek() {
+    // Build hours column
+    weekHours.innerHTML = "";
+    for (let h = 0; h < 24; h++) {
+  const row = document.createElement("div");
+  row.className = "h-12 border-b px-2 flex items-start";
+
+  const label = document.createElement("div");
+  label.className = "text-[11px] text-gray-500";
+
+  label.textContent = formatHour(h);
+
+  // Highlight current hour
+  const now = new Date();
+  if (isSameDay(now, currentDate) && h === now.getHours()) {
+    row.classList.add("bg-primary-50", "ring-2", "ring-primary-300");
+  }
+
+  row.appendChild(label);
+  weekHours.appendChild(row);
+}
+    // Clear day columns
+    for (let i=1; i<=7; i++) {
+      const col = el(`week-col-`+i);
+      col.innerHTML = "";
+      // build hourly grid
+      for (let h=0; h<24; h++) {
+        const slot = document.createElement("div");
+        slot.className = "h-12 border-b relative";
+        col.appendChild(slot);
+      }
+    }
+    const start = startOfWeekMon(currentDate);
+    const end = addDays(start, 6);
+
+    const inRange = sessions.filter(s => {
+      const d = parseYMD(s.date);
+      return d >= start && d <= end && passesFilters(s);
+    });
+
+    // Group by day, then layout overlaps per day
+const byDay = {};
+inRange.forEach(s => {
+  const d = parseYMD(s.date);
+  const key = d.toDateString();
+  (byDay[key] ||= []).push(s);
+});
+
+Object.values(byDay).forEach(dayItems => {
+  const laidOut = layoutOverlaps(dayItems);
+  laidOut.forEach(s => {
+    const d = parseYMD(s.date);
+    const dayIndex = ((d.getDay() + 6) % 7) + 1; // 1..7
+    const colEl = el(`week-col-` + dayIndex);
+
+    const startMin = toMinutes(s.start_time || "00:00");
+    const endMin = toMinutes(s.end_time || "00:00") || startMin + 60;
+
+    // 48px per hour => 0.8px per minute
+    const top = Math.round(startMin * 0.8);
+    const height = Math.max(22, Math.round((endMin - startMin) * 0.8));
+
+    const { left, width } = colPositionStyle(s._col, s._colCount, 4);
+
+    const block = document.createElement("div");
+    block.className = `absolute px-2 py-1 rounded-md text-white text-[11px] font-medium shadow ${statusClass(s.status)} cursor-pointer`;
+    block.style.top = `${top}px`;
+    block.style.height = `${height}px`;
+    block.style.left = left;
+    block.style.width = width;
+
+    block.textContent = `${(s.start_time || "").slice(0,5)} ${s.client_name || ""}`;
+    block.title = `${s.workout_plan_title || "Session"} (${s.start_time || ""} - ${s.end_time || ""})`;
+    block.addEventListener("click", () => openModal(s));
+
+    colEl.style.position = "relative";
+    colEl.appendChild(block);
+  });
+});
+
+    // Scroll current time into view if current week
+    const now = new Date();
+    if (now >= start && now <= end) {
+      const scrollY = now.getHours()*48;
+      weekGrid.scrollTo({ top: scrollY - 96, behavior: "smooth" });
+    }
+  }
+
+  // Day view render
+  function renderDay(date) {
+    dayLabel.textContent = date.toDateString();
+    dayGrid.innerHTML = "";
+    // Build 24 rows
+   for (let h = 0; h < 24; h++) {
+  const row = document.createElement("div");
+  row.className = "h-12 border-b relative flex";
+
+  const time = document.createElement("div");
+  time.className = "w-16 text-[11px] text-gray-500 px-2 pt-1 bg-gray-50 border-r sticky left-0";
+  time.textContent = formatHour(h);
+
+  const slot = document.createElement("div");
+  slot.className = "flex-1 relative";
+  slot.id = `day-hour-${h}`;
+
+  // Highlight current hour
+  const now = new Date();
+  if (isSameDay(now, date) && h === now.getHours()) {
+    row.classList.add("bg-primary-50", "ring-2", "ring-primary-300");
+  }
+
+  row.appendChild(time);
+  row.appendChild(slot);
+  dayGrid.appendChild(row);
+}
+
+   const todays = sessions.filter(s => s.date === fmtDate(date) && passesFilters(s));
+const laidOut = layoutOverlaps(todays);
+
+laidOut.forEach(s => {
+  const startMin = toMinutes(s.start_time || "00:00");
+  const endMin = toMinutes(s.end_time || "00:00") || startMin + 60;
+
+  const startHour = Math.floor(startMin / 60);
+  const offsetMin = startMin % 60;
+
+  const top = Math.round(offsetMin * 0.8);                       // within the hour slot
+  const height = Math.max(22, Math.round((endMin - startMin) * 0.8));
+
+  const { left, width } = colPositionStyle(s._col, s._colCount, 6); // slightly larger gutter in day view
+
+  const block = document.createElement("div");
+  block.className = `absolute px-2 py-1 rounded-md text-white text-[12px] font-medium shadow ${statusClass(s.status)} cursor-pointer`;
+  block.style.top = `${top}px`;
+  block.style.left = left;
+  block.style.width = width;
+  block.style.height = `${height}px`;
+
+  block.textContent = `${(s.start_time || "").slice(0,5)} ${s.client_name || ""}`;
+  block.title = `${s.workout_plan_title || "Session"} (${s.start_time || ""} - ${s.end_time || ""})`;
+  block.addEventListener("click", () => openModal(s));
+
+  el(`day-hour-${startHour}`).appendChild(block);
+});
+
+    // Scroll current hour into view
+    const now = new Date();
+    if (isSameDay(now, date)) {
+      const target = el(`day-hour-${now.getHours()}`);
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  // List view render
+let sortColumn = "date";
+let sortDirection = "asc";
+let currentPage = 1;
+const pageSize = 6; // sessions per page
+
+document.getElementById("sessionSearch").addEventListener("input", ()=> { currentPage = 1; renderList(); });
+document.getElementById("statusFilter").addEventListener("change", ()=> { currentPage = 1; renderList(); });
+
+function renderList() {
+  const searchTerm = document.getElementById("sessionSearch").value.toLowerCase();
+  const statusTerm = document.getElementById("statusFilter").value;
+  const listContainer = document.getElementById("listContainer");
+  listContainer.innerHTML = "";  
+
+  // Skeleton loader
+  for(let i=0; i<pageSize; i++) {
+    const skeleton = document.createElement("div");
+    skeleton.className = "animate-pulse h-20 bg-gray-200 rounded-2xl mb-3 md:mb-0";
+    listContainer.appendChild(skeleton);
+  }
+
+  setTimeout(() => { // simulate load
+    listContainer.innerHTML = "";
+
+    let filtered = sessions.filter(passesFilters)
+                           .filter(s => s.client_name?.toLowerCase().includes(searchTerm) 
+                                     || s.workout_plan_title?.toLowerCase().includes(searchTerm));
+    if (statusTerm) filtered = filtered.filter(s => s.status === statusTerm);
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `
+        <div class="p-6 bg-white rounded-2xl border text-center text-gray-600">
+          No sessions match your filters.
+        </div>`;
+      document.getElementById("pagination").innerHTML = "";
+      return;
+    }
+
+    // Sorting
+    filtered.sort((a, b) => {
+      let valA = a[sortColumn] || "";
+      let valB = b[sortColumn] || "";
+      if(sortColumn === "date") { valA += a.start_time; valB += b.start_time; }
+      return sortDirection === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / pageSize);
+    const paginated = filtered.slice((currentPage-1)*pageSize, currentPage*pageSize);
+
+    // Table Header
+    const table = document.createElement("div");
+    table.className = "w-full overflow-x-auto";
+
+    const header = document.createElement("div");
+    header.className = "hidden md:grid grid-cols-5 gap-4 p-4  bg-gray-50 font-semibold text-gray-700 rounded-t-2xl sticky top-0 z-10 shadow-sm";
+    header.innerHTML = `
+      <div class="cursor-pointer" onclick="toggleSort('client_name')">Client</div>
+      <div class="cursor-pointer" onclick="toggleSort('workout_plan_title')">Session</div>
+      <div class="cursor-pointer" onclick="toggleSort('date')">Date & Time</div>
+      <div>Notes</div>
+      <div>Status</div>
+    `;
+    table.appendChild(header);
+
+    paginated.forEach(s => {
+      const row = document.createElement("div");
+      row.className = "grid grid-cols-1  md:grid-cols-5 gap-4 p-4 bg-white rounded-2xl shadow hover:shadow-lg transition hover:scale-[1.01] cursor-pointer mb-3";
+      row.innerHTML = `
+        <div class="font-semibold text-gray-900">${s.client_name || "Client"}</div>
+        <div>${s.workout_plan_title || "Session"}</div>
+        <div class="text-sm text-gray-600 flex items-center gap-2">
+          <i class="fas fa-clock"></i> ${s.date} | ${(s.start_time||"").slice(0,5)}–${(s.end_time||"").slice(0,5)}
+        </div>
+        <div class="text-sm text-gray-500">${s.notes || "-"}</div>
+        <div>
+          <span class="px-2 py-1 text-xs font-medium rounded-full text-white ${statusClass(s.status)}">
+            ${s.status || "Unknown"}
+          </span>
+        </div>
+      `;
+      row.addEventListener("click", () => openModal(s));
+      table.appendChild(row);
+    });
+
+    listContainer.appendChild(table);
+
+    // Pagination controls
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+    for(let i=1;i<=totalPages;i++){
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.className = `px-3 py-1 rounded-lg ${i===currentPage ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`;
+      btn.addEventListener("click", ()=> { currentPage = i; renderList(); });
+      pagination.appendChild(btn);
+    }
+  }, 300); // 300ms loader effect
+}
+
+function toggleSort(column) {
+  if(sortColumn === column) {
+    sortDirection = sortDirection === "asc" ? "desc" : "asc";
+  } else {
+    sortColumn = column;
+    sortDirection = "asc";
+  }
+  renderList();
+}
+
+// Initial render
+renderList();
+
+  // Modal handlers
+  function openModal(s) {
+    modalTitle.textContent = s.workout_plan_title || "Session details";
+    modalBody.innerHTML = `
+      <div class="flex items-center gap-2"><i class="fas fa-user text-gray-400"></i><span>${s.client_name || "-"}</span></div>
+      <div class="flex items-center gap-2"><i class="fas fa-calendar text-gray-400"></i><span>${s.date}</span></div>
+      <div class="flex items-center gap-2"><i class="fas fa-clock text-gray-400"></i><span>${(s.start_time||"").slice(0,5)}–${(s.end_time||"").slice(0,5)}</span></div>
+      <div class="flex items-center gap-2"><i class="fas fa-info-circle text-gray-400"></i><span>${s.status || "Unknown"}</span></div>
+      ${s.notes ? `<div class="flex items-start gap-2"><i class="fas fa-sticky-note text-gray-400 mt-0.5"></i><span>${s.notes}</span></div>` : ""}
+    `;
+    modalOpen.href = `/schedule/sessions/${s.id}/`;
+    sessionModal.classList.remove("hidden");
+  }
+  function closeModal(){ sessionModal.classList.add("hidden"); }
+  modalClose.addEventListener("click", closeModal);
+  modalDismiss.addEventListener("click", closeModal);
+  sessionModal.addEventListener("click", (e)=> { if (e.target === sessionModal.firstElementChild) closeModal(); });
+
+  // Events: navigation
+  btnToday.addEventListener("click", () => { currentDate = new Date(); setLabel(); refreshRange(); });
+  btnPrev.addEventListener("click", () => {
+    if (viewMode === "month") currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()-1, 1);
+    else if (viewMode === "week") currentDate = addDays(currentDate, -7);
+    else if (viewMode === "day") currentDate = addDays(currentDate, -1);
+    refreshRange();
+  });
+  btnNext.addEventListener("click", () => {
+    if (viewMode === "month") currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 1);
+    else if (viewMode === "week") currentDate = addDays(currentDate, 7);
+    else if (viewMode === "day") currentDate = addDays(currentDate, 1);
+    refreshRange();
+  });
+
+  // View toggles
+  btnMonth.addEventListener("click", ()=> showView("month"));
+  btnWeek.addEventListener("click", ()=> showView("week"));
+  btnDay.addEventListener("click",  ()=> showView("day"));
+  btnList.addEventListener("click", ()=> showView("list"));
+  backToMonth.addEventListener("click", ()=> showView("month"));
+
+  // Filters
+  document.querySelectorAll(".status-filter").forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (cb.checked) statusFilter.add(cb.value); else statusFilter.delete(cb.value);
+      applyViewRender();
+    });
+  });
+  searchClient.addEventListener("input", (e) => {
+    clientQuery = e.target.value.trim().toLowerCase();
+    applyViewRender();
+  });
+
+  // Time formatting
+  function formatHour(h) {
+    const ampm = h < 12 ? "AM" : "PM";
+    const hr = h % 12 || 12;
+    return `${pad(hr)}:00 ${ampm}`;
+  }
+
+  // Range selection + fetch
+  function refreshRange() {
+    setLabel();
+    if (viewMode === "month") {
+      const start = startOfMonth(currentDate);
+      const end = endOfMonth(currentDate);
+      fetchSessionsForRange(start, end);
+    } else if (viewMode === "week") {
+      const start = startOfWeekMon(currentDate);
+      const end = addDays(start, 6);
+      fetchSessionsForRange(start, end);
+    } else if (viewMode === "day") {
+      fetchSessionsForRange(currentDate, currentDate);
+    } else {
+      // list: load a reasonable range (this month)
+      const start = startOfMonth(currentDate);
+      const end = endOfMonth(currentDate);
+      fetchSessionsForRange(start, end);
+    }
+  }
+
+  // Init
+  showView("month");
+  refreshRange();
+});
+</script>
+{% endblock %}

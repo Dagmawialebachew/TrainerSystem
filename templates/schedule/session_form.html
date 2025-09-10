@@ -1,0 +1,71 @@
+{# templates/schedule/session_form.html #}
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="container mx-auto p-4 sm:p-6 max-w-3xl">
+  <nav class="text-sm text-gray-500 mb-4">
+    <a href="{% url 'schedule:calendar' %}" class="hover:text-gray-700">Schedule</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'schedule:session_detail' object.pk %}" class="hover:text-gray-700">Session</a>
+    <span class="mx-2">/</span>
+    <span class="text-gray-700">Edit</span>
+  </nav>
+
+  <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-4">
+    Edit session
+  </h1>
+
+  <form method="post" class="bg-white rounded-2xl shadow p-4 sm:p-6 space-y-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="p-3 rounded-md bg-warning-50 text-warning-800 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-700">Schedule</label>
+        {{ form.schedule|add_class:"mt-1 w-full rounded-md border-gray-300 focus:border-primary-400 focus:ring-primary-400" }}
+        {% if form.schedule.errors %}<p class="text-xs text-red-600 mt-1">{{ form.schedule.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700">Date</label>
+        {{ form.date|add_class:"mt-1 w-full rounded-md border-gray-300 focus:border-primary-400 focus:ring-primary-400" }}
+        {% if form.date.errors %}<p class="text-xs text-red-600 mt-1">{{ form.date.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700">Start time</label>
+        {{ form.start_time|add_class:"mt-1 w-full rounded-md border-gray-300 focus:border-primary-400 focus:ring-primary-400" }}
+        {% if form.start_time.errors %}<p class="text-xs text-red-600 mt-1">{{ form.start_time.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700">End time</label>
+        {{ form.end_time|add_class:"mt-1 w-full rounded-md border-gray-300 focus:border-primary-400 focus:ring-primary-400" }}
+        {% if form.end_time.errors %}<p class="text-xs text-red-600 mt-1">{{ form.end_time.errors.0 }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div>
+      <label class="inline-flex items-center gap-2 text-sm">
+        {{ form.trainer_approved }}
+        <span>Approved</span>
+      </label>
+      {% if form.trainer_approved.errors %}<p class="text-xs text-red-600 mt-1">{{ form.trainer_approved.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-700">Notes</label>
+      {{ form.notes|add_class:"mt-1 w-full rounded-md border-gray-300 focus:border-primary-400 focus:ring-primary-400" }}
+      {% if form.notes.errors %}<p class="text-xs text-red-600 mt-1">{{ form.notes.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="pt-2 flex items-center justify-end gap-2">
+      <a href="{% url 'schedule:session_detail' object.pk %}" class="px-3 py-2 text-sm rounded-md border hover:bg-gray-50">Cancel</a>
+      <button type="submit" class="px-3 py-2 text-sm rounded-md bg-secondary-600 text-white hover:bg-secondary-700">
+        Save changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

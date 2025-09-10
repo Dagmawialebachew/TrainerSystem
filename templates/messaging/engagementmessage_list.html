@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Engagement Messages - Coming Soon{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-12 text-center">
+  
+  <!-- Icon / Illustration -->
+  <div class="mb-6">
+    <i class="fas fa-envelope-open-text text-primary-600 text-6xl"></i>
+  </div>
+
+  <!-- Title -->
+  <h1 class="text-3xl font-bold text-gray-800 mb-3">
+    Engagement Messages
+  </h1>
+  <p class="text-gray-500 text-lg">
+    A new way to connect with your clients is on the way.  
+    Soon you’ll be able to send <span class="text-primary-600 font-semibold">personalized messages</span>  
+    and <span class="text-primary-600 font-semibold">time-saving templates</span> directly from here.
+  </p>
+
+  <!-- Fancy “Coming Soon” Card -->
+  <div class="mt-10 relative rounded-2xl border border-dashed border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100 shadow-md p-10">
+    <h2 class="text-xl font-semibold text-gray-700 mb-3">🚀 Coming Soon</h2>
+    <p class="text-gray-500">
+      We're building something exciting. Stay tuned for updates in the next release.
+    </p>
+    
+    <!-- Placeholder skeleton loading style -->
+    <div class="mt-6 space-y-4">
+      <div class="h-12 w-full rounded-lg bg-gray-200 animate-pulse"></div>
+      <div class="h-12 w-3/4 rounded-lg bg-gray-200 animate-pulse"></div>
+      <div class="h-12 w-2/3 rounded-lg bg-gray-200 animate-pulse"></div>
+    </div>
+  </div>
+
+  <!-- Action CTA -->
+  <div class="mt-10">
+    <a href="{% url 'clients:dashboard'%}" 
+       class="inline-flex items-center px-6 py-3 text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg transition gap-2">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Subscription Details</h1>
+
+    {% if subscription %}
+    <div class="bg-white shadow p-6 rounded-md space-y-2">
+        <p><strong>Package:</strong> {{ subscription.package }}</p>
+        <p><strong>Status:</strong> {{ subscription.status|title }}</p>
+        <p><strong>Amount:</strong> {{ subscription.monthly_amount }} {{ subscription.currency }}</p>
+        <p><strong>Start Date:</strong> {{ subscription.start_date|date:"M d, Y" }}</p>
+        <p><strong>Current Period:</strong> {{ subscription.current_period_start|date:"M d, Y" }} - {{ subscription.current_period_end|date:"M d, Y" }}</p>
+        {% if subscription.trial_end %}
+        <p><strong>Trial Ends:</strong> {{ subscription.trial_end|date:"M d, Y" }}</p>
+        {% endif %}
+        {% if subscription.cancelled_at %}
+        <p><strong>Cancelled At:</strong> {{ subscription.cancelled_at|date:"M d, Y" }}</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-gray-500">No subscription found.</p>
+    {% endif %}
+</div>
+{% endblock %}

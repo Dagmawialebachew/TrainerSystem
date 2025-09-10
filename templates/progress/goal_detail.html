@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-10 py-10 bg-gray-50 rounded-xl shadow-sm">
+  <!-- Title -->
+  <h1 class="text-3xl font-bold text-primary-900 mb-6 flex items-center gap-2">
+    <i class="fas fa-bullseye text-primary-500"></i>
+    {{ goal.title }}
+  </h1>
+
+  <!-- Metadata -->
+  <div class="space-y-3 text-sm text-gray-700">
+    <p><i class="fas fa-user text-primary-400 mr-2"></i> <strong>Client:</strong> {{ goal.client.user.get_full_name }}</p>
+    <p><i class="fas fa-tag text-primary-400 mr-2"></i> <strong>Type:</strong> {{ goal.goal_type }}</p>
+    <p><i class="fas fa-calendar-alt text-primary-400 mr-2"></i> <strong>Target Date:</strong> {{ goal.target_date|date:"M d, Y" }}</p>
+    <p><i class="fas fa-info-circle text-primary-400 mr-2"></i> <strong>Status:</strong>
+      <span class="px-2 py-1 rounded-full text-xs font-semibold
+        {% if goal.status == 'Completed' %}
+          bg-success-100 text-success-700
+        {% elif goal.status == 'In Progress' %}
+          bg-warning-100 text-warning-700
+        {% else %}
+          bg-gray-200 text-gray-600
+        {% endif %}">
+        {{ goal.status }}
+      </span>
+    </p>
+    <p><i class="fas fa-chart-line text-primary-400 mr-2"></i> <strong>Progress:</strong>
+      <span class="text-primary-700 font-semibold">{{ goal.progress_percentage|floatformat:1 }}%</span>
+    </p>
+  </div>
+
+  <!-- Description -->
+  {% if goal.description %}
+  <div class="mt-6 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+    <h2 class="text-sm font-semibold text-gray-600 mb-2"><i class="fas fa-align-left mr-1 text-primary-400"></i> Description</h2>
+    <p class="text-gray-800 leading-relaxed">{{ goal.description }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Actions -->
+  <div class="mt-8 flex gap-4">
+    <a href="{% url 'progress:edit_goal' goal.pk %}" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition flex items-center gap-2 text-sm">
+      <i class="fas fa-edit"></i> Edit Goal
+    </a>
+    <a href="{% url 'progress:goal_list' %}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg shadow hover:bg-gray-300 transition flex items-center gap-2 text-sm">
+      <i class="fas fa-arrow-left"></i> Back to Goals
+    </a>
+  </div>
+</div>
+{% endblock %}

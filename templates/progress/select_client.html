@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-6">
+  <h2 class="text-xl font-semibold text-primary-700 mb-4">Select a Client</h2>
+
+  {% if error %}
+    <p class="text-danger-600 mb-2">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" class="space-y-4 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+    {% csrf_token %}
+    <label for="client_pk" class="block text-sm font-medium text-gray-700">Choose a client:</label>
+    <select name="client_pk" id="client_pk" class="mt-1 block w-full rounded border-gray-300">
+      {% for client in clients %}
+        <option value="{{ client.pk }}">{{ client.user.get_full_name }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700">
+      Continue
+    </button>
+  </form>
+</div>
+{% endblock %}

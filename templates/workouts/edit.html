@@ -1,0 +1,423 @@
+{% extends 'form_base.html' %}
+{% load widget_tweaks %}
+
+{% block form_title %}Edit Workout Plan{% endblock %}
+{% block back_url %}{% url 'workouts:list' %}{% endblock %}
+
+{% block form_fields %}
+<div class="space-y-6">
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-200 min-w-max">
+    <button id="tab-plan" type="button" class="px-4 py-2 -mb-px border-b-2 border-primary-600 text-primary-600 font-medium">
+      Plan Details
+    </button>
+    <button id="tab-schedule" type="button" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+      Schedule Settings
+    </button>
+  </div>
+
+  <!-- Error area for workout validation -->
+  <div id="workout-errors" class="hidden rounded-md border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm"></div>
+
+  <!-- Plan Details Pane -->
+  <div id="pane-plan" class="mt-4">
+    {% for field in plan_form %}
+      {% if field.name != "workout_structure" %}
+      <div class="flex flex-col mb-4">
+        <label class="text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        {{ field|add_class:"px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 transition shadow-sm w-full" }}
+        {% if field.help_text %}
+          <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+        {% endif %}
+        {% for err in field.errors %}
+          <p class="text-xs text-warning-700 mt-1">{{ err }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Workout Builder -->
+    <!-- workout_json must be provided by the view (json.dumps([...])) -->
+    <div id="workout-builder" class="space-y-6" data-workout='{{ workout_json|safe }}'>
+      <div id="days-container" class="space-y-4"></div>
+
+      <!-- Add Day button: shown only when no saved structure (editable mode) -->
+      <div id="add-day-wrap" class="mt-2">
+        <button type="button" id="add-day-btn"
+          class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-4 py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
+          + Add Day
+        </button>
+      </div>
+    </div>
+
+    <!-- Hidden input will be kept in sync by JS; initial value comes from workout_json -->
+    <input type="hidden" name="workout_structure" id="id_workout_structure" value="{{ workout_json|safe }}">
+  </div>
+
+  <!-- Schedule Settings Pane -->
+  <div id="pane-schedule" class="mt-4 hidden">
+    {% for field in sched_form %}
+    <div class="flex flex-col mb-4">
+      <label class="text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+      {{ field|add_class:"px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 transition shadow-sm w-full" }}
+      {% if field.help_text %}
+        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+      {% endif %}
+      {% for err in field.errors %}
+        <p class="text-xs text-warning-700 mt-1">{{ err }}</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block submit_text %}Save Workout{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // -------------------
+  // Tabs helper (same as before)
+  // -------------------
+  (function tabs() {
+    const tabPlan = document.getElementById("tab-plan");
+    const tabSched = document.getElementById("tab-schedule");
+    const panePlan = document.getElementById("pane-plan");
+    const paneSched = document.getElementById("pane-schedule");
+    if (!tabPlan || !tabSched || !panePlan || !paneSched) return;
+    function activatePlan(){ panePlan.classList.remove("hidden"); paneSched.classList.add("hidden"); tabPlan.classList.add("border-b-2","border-primary-600","text-primary-600"); tabSched.classList.remove("border-b-2","border-primary-600","text-primary-600"); }
+    function activateSched(){ paneSched.classList.remove("hidden"); panePlan.classList.add("hidden"); tabSched.classList.add("border-b-2","border-primary-600","text-primary-600"); tabPlan.classList.remove("border-b-2","border-primary-600","text-primary-600"); }
+    tabPlan.addEventListener("click", activatePlan);
+    tabSched.addEventListener("click", activateSched);
+    if (location.hash === "#schedule" || location.hash === "#pane-schedule") activateSched(); else activatePlan();
+  })();
+
+  // -------------------
+  // Elements & helpers
+  // -------------------
+  const builder = document.getElementById("workout-builder");
+  const daysContainer = document.getElementById("days-container");
+  const addDayBtn = document.getElementById("add-day-btn");
+  const addDayWrap = document.getElementById("add-day-wrap");
+  const hiddenInput = document.getElementById("id_workout_structure");
+  const errorBox = document.getElementById("workout-errors");
+
+  function safeParse(s) {
+    try { return JSON.parse(s); } catch (e) { return null; }
+  }
+
+  // -------------------
+  // Update hidden JSON
+  // -------------------
+  function updateWorkoutJSON(){
+    const workout = [];
+    Array.from(daysContainer.querySelectorAll(".day-block")).forEach(dayBlock => {
+      const dayNameEl = dayBlock.querySelector(".day-name");
+      if (!dayNameEl) return;
+      const dayName = dayNameEl.value.trim();
+      const exercises = [];
+      Array.from(dayBlock.querySelectorAll(".exercise-block")).forEach(ex => {
+        const name = ex.querySelector(".exercise-name")?.value.trim() || "";
+        const sets = ex.querySelector(".exercise-sets")?.value;
+        const reps = ex.querySelector(".exercise-reps")?.value;
+        if (name) {
+          exercises.push({
+            name,
+            sets: sets ? parseInt(sets, 10) : 0,
+            reps: reps ? parseInt(reps, 10) : 0
+          });
+        }
+      });
+      workout.push({ day: dayName, exercises });
+    });
+    hiddenInput.value = JSON.stringify(workout);
+  }
+
+  // -------------------
+  // Create exercise block
+  // -------------------
+  // -------------------
+// Exercise row builder
+// -------------------
+function createExerciseBlock(dayBlock, ex = { name: "", sets: "", reps: "" }) {
+  const exBlock = document.createElement("div");
+  exBlock.className = `
+    exercise-block
+    grid grid-cols-1 sm:grid-cols-[2fr,1fr,1fr,auto]
+    gap-3 items-center
+    bg-white rounded-lg shadow-sm
+    p-3
+  `.trim();
+
+  exBlock.innerHTML = `
+    <input
+      type="text"
+      class="exercise-name w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      placeholder="Exercise name"
+      value="${ex.name.replace(/"/g, '&quot;')}"
+      required
+    />
+
+    <input
+      type="number"
+      class="exercise-sets w-full sm:w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      placeholder="Sets"
+      min="1"
+      value="${ex.sets}"
+      required
+    />
+
+    <input
+      type="number"
+      class="exercise-reps w-full sm:w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      placeholder="Reps"
+      min="1"
+      value="${ex.reps}"
+      required
+    />
+
+    <button
+      type="button"
+      class="remove-exercise flex items-center justify-center text-red-500 hover:text-red-700 focus:outline-none"
+      aria-label="Remove exercise"
+    >
+      <i class="fas fa-times-circle text-lg"></i>
+    </button>
+  `;
+
+  // Events
+  exBlock.querySelector(".remove-exercise")
+         .addEventListener("click", () => { exBlock.remove(); updateWorkoutJSON(); });
+  exBlock.querySelectorAll("input")
+         .forEach(i => i.addEventListener("input", updateWorkoutJSON));
+
+  dayBlock.querySelector(".exercises-container").appendChild(exBlock);
+  return exBlock;
+}
+
+// -------------------
+// Day block builder
+// -------------------
+function createDayBlock(dayName = "", exercises = [], locked = true) {
+  const wrapper = document.createElement("details");
+  wrapper.className = `
+    day-block
+    group
+    w-full
+    bg-white border border-gray-200 rounded-2xl shadow-sm
+    mb-6
+  `.trim();
+  wrapper.open = false;
+
+  wrapper.innerHTML = `
+    <summary
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between
+             p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition
+             rounded-t-2xl"
+      aria-expanded="false"
+    >
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <svg
+          class="w-5 h-5 text-primary-500 transform transition-transform group-open:rotate-180"
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+        </svg>
+
+        <input
+          type="text"
+          class="day-name flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-semibold
+                 focus:ring-2 focus:ring-primary-400 transition bg-transparent"
+          placeholder="Day (e.g. Monday)"
+          value="${dayName.replace(/"/g, '&quot;')}"
+          ${locked ? "readonly" : ""}
+          required
+        />
+
+        ${locked
+          ? `<span
+               class="hidden sm:inline-block ml-2 px-2 py-1 text-xs text-gray-600
+                      bg-primary-100 border border-primary-200 rounded-lg"
+             >
+               Preferred day
+             </span>`
+          : ""}
+      </div>
+
+      ${!locked
+        ? `<button
+             type="button"
+             class="remove-day-btn flex items-center gap-1 text-red-500 hover:text-red-700
+                    focus:outline-none sm:ml-4 mt-3 sm:mt-0"
+             aria-label="Remove day"
+           >
+             <i class="fas fa-trash-alt"></i><span class="sr-only">Remove Day</span>
+           </button>`
+        : ""}
+    </summary>
+
+    <div
+      class="day-body px-4 pb-4 space-y-4"
+    >
+      <div class="exercises-container space-y-3"></div>
+
+      <button
+        type="button"
+        class="add-exercise-btn inline-flex items-center justify-center
+               w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white
+               px-4 py-2 rounded-xl font-semibold shadow transition
+               focus:outline-none focus:ring-2 focus:ring-green-300"
+      >
+        <i class="fas fa-plus mr-2"></i>Add Exercise
+      </button>
+    </div>
+  `;
+
+  // Add prefilled exercises
+  exercises.forEach(ex => createExerciseBlock(wrapper, ex));
+
+  // Event bindings
+  wrapper.querySelector("summary")
+         .addEventListener("click", e => {
+           // Toggle aria-expanded
+           const exp = wrapper.open;
+           e.currentTarget.setAttribute("aria-expanded", !exp);
+         });
+
+  wrapper.querySelector(".add-exercise-btn")
+         .addEventListener("click", () => {
+           createExerciseBlock(wrapper);
+           updateWorkoutJSON();
+         });
+
+  const removeBtn = wrapper.querySelector(".remove-day-btn");
+  if (removeBtn) {
+    removeBtn.addEventListener("click", () => {
+      wrapper.remove();
+      updateWorkoutJSON();
+    });
+  }
+
+  // Day-name change updates JSON
+  wrapper.querySelector(".day-name")
+         .addEventListener("input", updateWorkoutJSON);
+
+  daysContainer.appendChild(wrapper);
+  return wrapper;
+}
+
+
+  // -------------------
+  // Initialize builder from embedded data (robust parse)
+  // -------------------
+  (function init() {
+    // read from data-workout or hidden input as fallback
+    const raw = builder?.dataset?.workout || hiddenInput.value || "[]";
+    let parsed = [];
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.error("Failed to parse workout JSON:", err, raw);
+      parsed = [];
+    }
+
+    console.log('Raw workout data:', raw);
+    console.log('Parsed workout:', parsed);
+
+    if (Array.isArray(parsed) && parsed.length) {
+      // Render each day as locked (preferred day — readonly name) and prefill exercises.
+      parsed.forEach(day => {
+        const dayName = day.day || '';
+        const exercises = Array.isArray(day.exercises) ? day.exercises : [];
+        createDayBlock(dayName, exercises, true); // lock names
+      });
+      // hide the add-day button because days are defined by saved structure
+      if (addDayWrap) addDayWrap.style.display = 'none';
+    } else {
+      // No saved structure: allow free editing (create-like)
+      if (addDayWrap) addDayWrap.style.display = 'block';
+      // Start with one empty day for convenience
+      createDayBlock("", [], false);
+    }
+
+    // wire add-day button (if visible)
+    if (addDayBtn) {
+      addDayBtn.addEventListener("click", () => {
+        createDayBlock("", [], false);
+        updateWorkoutJSON();
+      });
+    }
+
+    // initial sync
+    updateWorkoutJSON();
+  })();
+
+  // -------------------
+  // Client-side validation before submit
+  // -------------------
+  function validateWorkout() {
+    errorBox.classList.add("hidden");
+    errorBox.innerHTML = "";
+
+    const errors = [];
+    const dayBlocks = Array.from(daysContainer.querySelectorAll(".day-block"));
+    if (!dayBlocks.length) {
+      errors.push("You must have at least one day in the workout.");
+    }
+
+    dayBlocks.forEach((dayBlock, idx) => {
+      const dayName = dayBlock.querySelector(".day-name").value.trim() || `Day ${idx+1}`;
+      const exercises = Array.from(dayBlock.querySelectorAll(".exercise-block"));
+      if (!exercises.length) {
+        errors.push(`${dayName}: please add at least one exercise.`);
+        return; // skip deeper checks for this day
+      }
+      exercises.forEach((ex, exIdx) => {
+        const name = ex.querySelector(".exercise-name").value.trim();
+        const sets = parseInt(ex.querySelector(".exercise-sets").value, 10);
+        const reps = parseInt(ex.querySelector(".exercise-reps").value, 10);
+        if (!name) errors.push(`${dayName}: exercise #${exIdx+1} is missing a name.`);
+        if (!Number.isInteger(sets) || sets <= 0) errors.push(`${dayName}: "${name || 'Exercise'}" needs sets > 0.`);
+        if (!Number.isInteger(reps) || reps <= 0) errors.push(`${dayName}: "${name || 'Exercise'}" needs reps > 0.`);
+      });
+    });
+
+    if (errors.length) {
+      errorBox.innerHTML = `<ul class="list-disc pl-5 space-y-1">${errors.map(e => `<li>${e}</li>`).join("")}</ul>`;
+      errorBox.classList.remove("hidden");
+      // scroll to error box
+      errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    return true;
+  }
+
+  // Ensure we validate before submit
+  document.addEventListener("submit", function (e) {
+    // Update hidden JSON first
+    updateWorkoutJSON();
+
+    if (!validateWorkout()) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // else allow submit
+  });
+
+  // Keep hidden input synced on changes as well
+  document.addEventListener("input", function (e) {
+    if (!e.target) return;
+    const cls = e.target.classList;
+    if (!cls) return;
+    if (cls.contains("exercise-name") || cls.contains("exercise-sets") || cls.contains("exercise-reps") || cls.contains("day-name")) {
+      updateWorkoutJSON();
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,479 @@
+{# templates/workouts/plan_form.html #}
+{% extends "form_base.html" %}
+{% load widget_tweaks %}
+{% block form_title %}Create Workout Plan{% endblock %}
+{% block back_url %}{% url 'workouts:list' %}{% endblock %}
+
+{% block form_fields %}
+<div class="space-y-6">
+  <!-- Tabs -->
+  <div class="flex border-b border-gray-200 min-w-max">
+    <button
+      id="tab-plan"
+      type="button"
+      class="px-4 py-2 -mb-px border-b-2 border-primary-600 text-primary-600 font-medium"
+    >
+      Plan Details
+    </button>
+    <button
+      id="tab-schedule"
+      type="button"
+      class="px-4 py-2 text-gray-600 hover:text-gray-800"
+    >
+      Schedule Settings
+    </button>
+  </div>
+
+  <!-- Plan Details Pane -->
+  <div id="pane-plan" class="mt-4">
+    {% for field in plan_form %}
+      {% if field.name != "workout_structure" %}
+      <div class="flex flex-col mb-4">
+        <label class="text-sm font-medium text-gray-700 mb-1">
+          {{ field.label }}
+        </label>
+        {{ field|add_class:"px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 transition shadow-sm" }}
+        {% if field.help_text %}
+          <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+        {% endif %}
+        {% for err in field.errors %}
+          <p class="text-xs text-warning-700 mt-1">{{ err }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {# Workout Builder #}
+    <div
+      id="workout-builder"
+      class="space-y-6"
+      data-workout="{{ plan_form.instance.workout_structure|escapejs }}"
+    >
+      <div id="days-container" class="space-y-4"></div>
+      <button
+        type="button"
+        id="add-day-btn"
+        class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-4 py-2 rounded-xl font-semibold shadow hover:scale-105 transition"
+      >
+        + Add Day
+      </button>
+    </div>
+
+    <input
+      type="hidden"
+      name="workout_structure"
+      id="id_workout_structure"
+      value="{{ plan_form.instance.workout_structure|escapejs }}"
+    >
+
+    <button
+      type="button"
+      id="generate-ai-btn"
+      class="bg-blue-500 text-white px-4 py-2 rounded-xl shadow hover:scale-105 transition mt-3"
+    >
+      Generate AI Workout Plan
+    </button>
+    <div id="ai-preview" class="mt-4 p-4 bg-gray-100 rounded-xl shadow-inner"></div>
+  </div>
+
+  <!-- Schedule Settings Pane -->
+  <div id="pane-schedule" class="mt-4 hidden">
+    {% for field in sched_form %}
+    <div class="flex flex-col mb-4">
+      <label class="text-sm font-medium text-gray-700 mb-1">
+        {{ field.label }}
+      </label>
+      {{ field|add_class:"px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 transition shadow-sm" }}
+      {% if field.help_text %}
+        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+      {% endif %}
+      {% for err in field.errors %}
+        <p class="text-xs text-warning-700 mt-1">{{ err }}</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="days-hint" class="rounded-xl border border-warning-200 bg-warning-50 text-warning-800 px-4 py-3 text-sm">
+  Please select a client to configure workout days.
+</div>
+
+<div id="preferred-days-panel" class="hidden rounded-xl border border-primary-200 bg-white p-4 mt-3">
+  <div class="flex items-center justify-between">
+    <h3 class="text-sm font-semibold text-gray-800">Set preferred workout days</h3>
+    <span class="text-xs text-gray-500">Choose 1–7 days</span>
+  </div>
+  <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+    {% for d in days %}
+      <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer hover:bg-primary-50">
+        <input type="checkbox" class="pref-day-checkbox" value="{{ d }}">
+        <span class="text-sm text-gray-800">{{ d }}</span>
+      </label>
+    {% endfor %}
+  </div>
+  <div class="mt-4 flex items-center gap-2">
+    <button id="save-preferred-days" type="button" class="px-3 py-2 rounded-lg bg-secondary-600 text-white text-sm font-semibold hover:bg-secondary-700">
+      Save preferred days
+    </button>
+    <span id="pref-days-feedback" class="text-xs text-gray-500"></span>
+  </div>
+</div>
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+</div>
+{% endblock %}
+
+{% block submit_text %}Save Workout{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Tab switching
+  const btnPlan = document.getElementById("tab-plan");
+  const btnSched = document.getElementById("tab-schedule");
+  const panePlan = document.getElementById("pane-plan");
+  const paneSched = document.getElementById("pane-schedule");
+
+  btnPlan.addEventListener("click", () => {
+    panePlan.classList.remove("hidden");
+    paneSched.classList.add("hidden");
+    btnPlan.classList.add("border-primary-600","text-primary-600");
+    btnSched.classList.remove("border-primary-600","text-primary-600");
+  });
+
+  btnSched.addEventListener("click", () => {
+    paneSched.classList.remove("hidden");
+    panePlan.classList.add("hidden");
+    btnSched.classList.add("border-primary-600","text-primary-600");
+    btnPlan.classList.remove("border-primary-600","text-primary-600");
+  });
+
+  // Auto generate the workout days pased on the client preferred days
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const daysContainer = document.getElementById("days-container");
+  const addDayBtn = document.getElementById("add-day-btn");
+  const workoutInput = document.getElementById("id_workout_structure");
+  const workoutBuilder = document.getElementById("workout-builder");
+  const clientSelect = document.querySelector('select[name="client"]');
+  const workoutDataTag = document.getElementById("workoutData");
+  const daysHint = document.getElementById("days-hint");
+  const prefPanel = document.getElementById("preferred-days-panel");
+  const savePrefBtn = document.getElementById("save-preferred-days");
+  const prefFeedback = document.getElementById("pref-days-feedback");
+
+  // Initial state: show builder UI, but hint + disable addDay until client selected
+  addDayBtn.disabled = true;
+  addDayBtn.classList.add("opacity-50", "cursor-not-allowed");
+  daysHint.classList.remove("hidden");
+  prefPanel.classList.add("hidden");
+
+  function updateWorkoutJSON() {
+    const workoutData = [];
+    daysContainer.querySelectorAll(".day-block").forEach(dayBlock => {
+      const dayName = dayBlock.querySelector(".day-name").value;
+      const exercises = [];
+      dayBlock.querySelectorAll(".exercise-block").forEach(exBlock => {
+        const name = exBlock.querySelector(".exercise-name").value;
+        const sets = exBlock.querySelector(".exercise-sets").value;
+        const reps = exBlock.querySelector(".exercise-reps").value;
+        if (name) exercises.push({ name, sets: parseInt(sets), reps: parseInt(reps) });
+      });
+      if (dayName) workoutData.push({ day: dayName, exercises });
+    });
+    workoutInput.value = JSON.stringify(workoutData);
+  }
+
+function addExercise(dayBlock, ex = { name: "", sets: "", reps: "" }) {
+  const exerciseBlock = document.createElement("div");
+  exerciseBlock.className = `
+    exercise-block
+    grid grid-cols-1 sm:grid-cols-[2fr,1fr,1fr,auto]
+    items-center gap-4
+    bg-white rounded-lg shadow p-3
+  `.trim();
+
+  exerciseBlock.innerHTML = `
+    <input
+      type="text"
+      placeholder="Exercise name"
+      class="exercise-name w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      value="${ex.name.replace(/"/g, '&quot;')}"
+      required
+    />
+    <input
+      type="number"
+      placeholder="Sets"
+      class="exercise-sets w-full sm:w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      min="1"
+      value="${ex.sets}"
+      required
+    />
+    <input
+      type="number"
+      placeholder="Reps"
+      class="exercise-reps w-full sm:w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-400 transition"
+      min="1"
+      value="${ex.reps}"
+      required
+    />
+    <button
+      type="button"
+      class="remove-exercise flex items-center justify-center text-red-500 hover:text-red-700 focus:outline-none"
+      aria-label="Remove exercise"
+    >
+      <i class="fas fa-times-circle text-lg"></i>
+    </button>
+  `;
+
+  exerciseBlock
+    .querySelector(".remove-exercise")
+    .addEventListener("click", () => {
+      exerciseBlock.remove();
+      updateWorkoutJSON();
+    });
+
+  exerciseBlock.querySelectorAll("input").forEach(i =>
+    i.addEventListener("input", updateWorkoutJSON)
+  );
+
+  dayBlock.querySelector(".exercises-container").appendChild(exerciseBlock);
+  return exerciseBlock;
+}
+
+
+function addDay(dayName = "", exercises = [], locked = false) {
+  const dayBlock = document.createElement("div");
+  dayBlock.className = `
+    day-block
+    bg-primary-50 border border-primary-200
+    rounded-2xl shadow-sm
+    p-4 md:p-6 mb-6
+  `.trim();
+
+  dayBlock.innerHTML = `
+    <div class="day-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <input
+          type="text"
+          placeholder="Day (e.g. Monday)"
+          class="day-name flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base font-semibold focus:ring-2 focus:ring-primary-400 transition bg-white"
+          value="${dayName.replace(/"/g, '&quot;')}"
+          ${locked ? "readonly" : ""}
+          required
+        />
+        ${
+          locked
+            ? `<span
+                 class="hidden sm:inline-block ml-2 px-2 py-1 text-xs text-gray-600
+                        bg-primary-100 border border-primary-200 rounded-lg"
+               >
+                 Preferred day
+               </span>`
+            : ""
+        }
+      </div>
+      ${
+        !locked
+          ? `<button
+               type="button"
+               class="remove-day-btn flex items-center gap-1 text-red-500 hover:text-red-700 focus:outline-none"
+               aria-label="Remove day"
+             >
+               <i class="fas fa-trash-alt"></i>
+               <span class="sr-only">Remove Day</span>
+             </button>`
+          : ""
+      }
+    </div>
+
+    <div class="exercises-container space-y-3 mt-4"></div>
+
+    <button
+      type="button"
+      class="add-exercise-btn inline-flex items-center justify-center
+             w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white
+             px-4 py-2 rounded-xl font-semibold shadow transition
+             focus:outline-none focus:ring-2 focus:ring-green-300"
+    >
+      <i class="fas fa-plus mr-2"></i>Add Exercise
+    </button>
+  `;
+
+  // hook up events
+  dayBlock.querySelector(".add-exercise-btn")
+    .addEventListener("click", () => {
+      addExercise(dayBlock);
+      updateWorkoutJSON();
+    });
+
+  const removeBtn = dayBlock.querySelector(".remove-day-btn");
+  if (removeBtn) {
+    removeBtn.addEventListener("click", () => {
+      dayBlock.remove();
+      updateWorkoutJSON();
+    });
+  }
+
+  dayBlock.querySelector(".day-name")
+    .addEventListener("input", updateWorkoutJSON);
+
+  // prefill any exercises
+  exercises.forEach(ex => addExercise(dayBlock, ex));
+
+  daysContainer.appendChild(dayBlock);
+  updateWorkoutJSON();
+  return dayBlock;
+}
+
+addDayBtn.addEventListener("click", () => addDay());
+
+
+  // Editing prefill: only if there is existing structure
+  if (workoutDataTag && workoutDataTag.textContent.trim()) {
+    const existingWorkout = JSON.parse(workoutDataTag.textContent);
+    if (existingWorkout.length) {
+      // Assume client is already set; hide hint, allow adding/removing days
+      daysHint.classList.add("hidden");
+      addDayBtn.disabled = false;
+      addDayBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      existingWorkout.forEach(day => addDay(day.day, day.exercises));
+    }
+  }
+
+  async function fetchClientDays(clientId) {
+    const res = await fetch(`/api/schedule/client-days/${clientId}/`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.days || [];
+  }
+
+  async function saveClientDays(clientId, days) {
+    const res = await fetch(`/api/schedule/client-days/${clientId}/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ days })
+    });
+    return res.ok;
+  }
+
+  function getSelectedPrefDays() {
+    return Array.from(document.querySelectorAll(".pref-day-checkbox:checked"))
+      .map(cb => cb.value);
+  }
+
+  function showPreferredDaysPanel(show) {
+    prefPanel.classList.toggle("hidden", !show);
+  }
+
+  function setBuilderLockedWith(days) {
+    daysContainer.innerHTML = "";
+    workoutInput.value = "";
+    days.forEach(d => addDay(d, [], true)); // locked day names
+    daysHint.classList.add("hidden");
+    addDayBtn.disabled = true;
+    addDayBtn.classList.add("opacity-50", "cursor-not-allowed");
+  }
+
+  clientSelect.addEventListener("change", async () => {
+    const clientId = clientSelect.value;
+    // Show hint until a real client is chosen
+    if (!clientId) {
+      daysHint.classList.remove("hidden");
+      prefPanel.classList.add("hidden");
+      addDayBtn.disabled = true;
+      addDayBtn.classList.add("opacity-50", "cursor-not-allowed");
+      daysContainer.innerHTML = "";
+      workoutInput.value = "";
+      return;
+    }
+
+    // Client selected: hide hint and check server for preferred days
+    daysHint.classList.add("hidden");
+    const days = await fetchClientDays(clientId);
+
+    if (days.length > 0) {
+      showPreferredDaysPanel(false);
+      setBuilderLockedWith(days);
+    } else {
+      // No preferences: show structured multiselect; keep builder blank until saved
+      showPreferredDaysPanel(true);
+      daysContainer.innerHTML = "";
+      workoutInput.value = "";
+      addDayBtn.disabled = true;
+      addDayBtn.classList.add("opacity-50", "cursor-not-allowed");
+    }
+  });
+
+savePrefBtn.addEventListener("click", async () => {
+  const clientId = clientSelect.value;
+  if (!clientId) return;
+
+  const chosen = getSelectedPrefDays();
+  prefFeedback.textContent = "";
+  if (!chosen.length) {
+    prefFeedback.textContent = "Please select at least one day.";
+    return;
+  }
+
+  // Grab CSRF token from hidden input
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // Save preferred days with CSRF
+  const res = await fetch(`/api/schedule/client-days/${clientId}/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken
+    },
+    body: JSON.stringify({ days: chosen })
+  });
+
+  if (res.ok) {
+    showPreferredDaysPanel(false);
+    setBuilderLockedWith(chosen);
+    prefFeedback.textContent = "";
+  } else {
+    prefFeedback.textContent = "Could not save days. Please try again.";
+  }
+});
+
+
+
+
+  // AI Workout Plan generator
+  document.getElementById("generate-ai-btn").addEventListener("click", async () => {
+    const form = document.querySelector("form");
+    const data = {
+      difficulty: form.querySelector('select[name="difficulty"]').value,
+      duration_weeks: form.querySelector('input[name="duration_weeks"]').value,
+      goal: form.querySelector('select[name="goal"]').value,
+      days_per_week: form.querySelector('input[name="days_per_week"]').value,
+      include_warmup_cooldown: form.querySelector('input[name="include_warmup_cooldown"]').checked
+    };
+
+    const res = await fetch("/generate-ai-workout/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.workout_structure) {
+      document.getElementById("id_workout_structure").value = JSON.stringify(result.workout_structure);
+
+      const preview = document.getElementById("ai-preview");
+      preview.innerHTML = "";
+      Object.entries(result.workout_structure).forEach(([day, exercises]) => {
+        const dayDiv = document.createElement("div");
+        dayDiv.innerHTML = `<h3 class="font-bold">${day}</h3>`;
+        const ul = document.createElement("ul");
+        exercises.forEach(ex => {
+          ul.innerHTML += `<li>${ex.name} – ${ex.sets}×${ex.reps}</li>`;
+        });
+        dayDiv.appendChild(ul);
+        preview.appendChild(dayDiv);
+      });
+    }
+  });
+})
+</script>
+{% endblock %}
