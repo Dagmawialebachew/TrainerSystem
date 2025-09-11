@@ -41,64 +41,136 @@
       </div>
 
       {# ─────────── NAV LINKS ──────────────────────────────────────────────── #}
-      <div class="flex space-x-6">
-        {% if user.is_authenticated %}
-          {# Trainer Links #}
-          {% if user.is_trainer and user.trainer_profile %}
-            <a href="{% url 'trainers:dashboard' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'trainers' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Dashboard
-            </a>
-            <a href="{% url 'trainers:client_list' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'client_list' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Clients
-            </a>
-            <a href="{% url 'workouts:list' %}"
-               class="nav-link {% if request.resolver_match.app_name == 'workouts' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Workouts
-            </a>
-            <a href="{% url 'nutrition:list' %}"
-               class="nav-link {% if request.resolver_match.app_name == 'nutrition' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Nutrition
-            </a>
-            <a href="{% url 'progress:overview' %}"
-               class="nav-link {% if request.resolver_match.app_name == 'progress' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Progress
-            </a>
-            <a href="{% url 'payments:dashboard' %}"
-               class="nav-link {% if request.resolver_match.app_name == 'payments' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Payments
-            </a>
-            <a href="{% url 'schedule:calendar' %}"
-               class="nav-link {% if request.resolver_match.app_name == 'schedule' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Schedule
-            </a>
+    <div class="hidden md:flex items-center space-x-8">
+  {% if user.is_authenticated %}
+    
+    {# Trainer Links #}
+    {% if user.is_trainer and user.trainer_profile %}
+      <a href="{% url 'trainers:dashboard' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'trainers' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Dashboard
+      </a>
 
-          {# Client Links #}
-          {% elif user.is_client and user.client_profile %}
-            <a href="{% url 'clients:dashboard' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'clients' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Dashboard
-            </a>
-            <a href="{% url 'clients:workout_plan' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'workout_plan' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Workouts
-            </a>
-            <a href="{% url 'clients:meal_plan' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'meal_plan' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Nutrition
-            </a>
-            <a href="{% url 'clients:progress' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'progress' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Progress
-            </a>
-            <a href="{% url 'clients:messages' %}"
-               class="nav-link {% if request.resolver_match.url_name == 'messages' %}text-primary-600 font-semibold{% else %}text-gray-700 hover:text-primary-400{% endif %}">
-              Messages
-            </a>
-          {% endif %}
-        {% endif %}
+      <a href="{% url 'trainers:client_list' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'client_list' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Clients
+      </a>
+
+      <a href="{% url 'workouts:list' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.app_name == 'workouts' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Workouts
+      </a>
+
+      <a href="{% url 'nutrition:list' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.app_name == 'nutrition' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Nutrition
+      </a>
+
+      <a href="{% url 'progress:overview' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.app_name == 'progress' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Progress
+      </a>
+
+      {# Dropdown for extra links #}
+      <div class="relative group">
+        <button class="nav-link text-gray-700 hover:text-primary-500 transition">
+          <i class="fas fa-ellipsis-h"></i> More
+        </button>
+        <div class="absolute left-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transform transition-all duration-200 z-20">
+          <a href="{% url 'payments:dashboard' %}"
+             class="block px-4 py-2 text-gray-700 hover:bg-gray-100
+                    {% if request.resolver_match.app_name == 'payments' %}text-primary-600 font-semibold{% endif %}">
+            Payments
+          </a>
+          <a href="{% url 'schedule:calendar' %}"
+             class="block px-4 py-2 text-gray-700 hover:bg-gray-100
+                    {% if request.resolver_match.app_name == 'schedule' %}text-primary-600 font-semibold{% endif %}">
+            Schedule
+          </a>
+        </div>
       </div>
+
+    {# Client Links #}
+    {% elif user.is_client and user.client_profile %}
+      <a href="{% url 'clients:dashboard' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'clients' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Dashboard
+      </a>
+
+      <a href="{% url 'clients:workout_plan' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'workout_plan' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Workouts
+      </a>
+
+      <a href="{% url 'clients:meal_plan' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'meal_plan' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Nutrition
+      </a>
+
+      <a href="{% url 'clients:progress' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'progress' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Progress
+      </a>
+
+      <a href="{% url 'clients:messages' %}"
+         class="relative nav-link transition-colors duration-200
+                {% if request.resolver_match.url_name == 'messages' %}
+                  text-primary-600 font-semibold after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary-600
+                {% else %}
+                  text-gray-700 hover:text-primary-500
+                {% endif %}">
+        Messages
+      </a>
+    {% endif %}
+  {% endif %}
+</div>
+
+
 
       {# ─────────── PROFILE / AUTH CTAS ───────────────────────────────────── #}
       <div class="flex items-center space-x-4">
