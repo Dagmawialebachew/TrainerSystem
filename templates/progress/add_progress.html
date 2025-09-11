@@ -7,7 +7,7 @@
     {% if user.is_client %}
     {% url 'clients:progress' %}
     {% elif user.is_trainer %}
-    {% url 'progress:client_progress' client_pk=client.pk %}
+    {% url 'progress:list' %}
     {% endif %}
 {% endblock %}
 

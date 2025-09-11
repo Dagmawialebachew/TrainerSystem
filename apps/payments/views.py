@@ -200,7 +200,7 @@ class ClientPaymentInsightView(View):
         revenue_by_status = {status: [] for status in statuses}
 
         # Aggregate payments
-        queryset = Payment.objects.values('paid_date', 'status').annotate(total=Sum('amount')).order_by('paid_date')
+        queryset = Payment.objects.filter(trainer = request.user.trainer_profile).values('paid_date', 'status').annotate(total=Sum('amount')).order_by('paid_date')
 
         # Safe list of dates (skip None)
         dates = sorted(set([entry['paid_date'].strftime('%b %d') for entry in queryset if entry['paid_date'] is not None]))
@@ -220,11 +220,11 @@ class ClientPaymentInsightView(View):
 
 
         # Top clients by revenue
-        top_clients_qs = ClientProfile.objects.annotate(revenue=Sum('payments_made__amount')).order_by('-revenue')[:5]
+        top_clients_qs = ClientProfile.objects.filter(trainer = request.user.trainer_profile).annotate(revenue=Sum('payments_made__amount')).order_by('-revenue')[:5]
         top_clients = [{"name": c.user.get_full_name(), "revenue": c.revenue or 0} for c in top_clients_qs]
 
         # Payment type breakdown
-        payment_type_qs = Payment.objects.values('payment_type').annotate(count=Count('id'))
+        payment_type_qs = Payment.objects.filter(trainer = request.user.trainer_profile).values('payment_type').annotate(count=Count('id'))
         total_payments = sum(p['count'] for p in payment_type_qs)
         payment_types = {
             p['payment_type']: round((p['count'] / total_payments) * 100)

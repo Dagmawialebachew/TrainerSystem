@@ -72,7 +72,8 @@ class CreateProgressView(LoginRequiredMixin, CreateView):
         # Client logic
         elif hasattr(request.user, 'client_profile') and self.request.user.is_client:
             self.client_profile = request.user.client_profile
-
+            
+      
         # Neither trainer nor client
         
 
@@ -185,6 +186,8 @@ class ProgressListView(LoginRequiredMixin, TrainerRequiredMixin, SubscriptionReq
                 'date': self.request.GET.get('date', ''),
             }
         })
+        context['client_profiles'] = ClientProfile.objects.filter(trainer=self.trainer_profile)
+
         return context
     
 class DeleteProgressView(LoginRequiredMixin, TrainerRequiredMixin, SubscriptionRequiredMixin,DeleteView):

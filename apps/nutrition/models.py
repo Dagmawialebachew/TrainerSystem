@@ -61,53 +61,6 @@ class MealPlan(models.Model):
     def get_absolute_url(self):
         return reverse('nutrition:detail', kwargs={'pk': self.pk})
 
-class EthiopianFood(models.Model):
-    """Database of Ethiopian foods for meal planning"""
-    
-    FOOD_CATEGORY_CHOICES = [
-        ('grains', 'Grains & Cereals'),
-        ('legumes', 'Legumes'),
-        ('vegetables', 'Vegetables'),
-        ('fruits', 'Fruits'),
-        ('meat', 'Meat & Poultry'),
-        ('dairy', 'Dairy'),
-        ('spices', 'Spices & Herbs'),
-        ('beverages', 'Beverages'),
-        ('traditional_dishes', 'Traditional Dishes'),
-    ]
-    
-    name = models.CharField(max_length=200)
-    name_amharic = models.CharField(max_length=200, blank=True)
-    category = models.CharField(max_length=30, choices=FOOD_CATEGORY_CHOICES)
-    description = models.TextField(blank=True)
-    
-    # Nutritional information (per 100g)
-    calories_per_100g = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    protein_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    carbs_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    fat_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    fiber_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    
-    # Availability & Cultural info
-    seasonal_availability = models.CharField(max_length=200, blank=True)
-    cultural_significance = models.TextField(blank=True)
-    preparation_notes = models.TextField(blank=True)
-    
-    # Dietary compatibility
-    is_vegetarian = models.BooleanField(default=False)
-    is_vegan = models.BooleanField(default=False)
-    is_gluten_free = models.BooleanField(default=False)
-    is_fasting_friendly = models.BooleanField(default=False, help_text="Orthodox fasting compatible")
-    
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        ordering = ['name']
-    
-    def __str__(self):
-        return f"{self.name} ({self.name_amharic})" if self.name_amharic else self.name
-    
     
     
 class TrainerFood(models.Model):
@@ -165,3 +118,51 @@ class TrainerFood(models.Model):
     def __str__(self):
         return f"{self.name} ({self.name_amharic})" if self.name_amharic else self.name
 
+
+class EthiopianFood(models.Model):
+    """Database of Ethiopian foods for meal planning"""
+    
+    FOOD_CATEGORY_CHOICES = [
+        ('grains', 'Grains & Cereals'),
+        ('legumes', 'Legumes'),
+        ('vegetables', 'Vegetables'),
+        ('fruits', 'Fruits'),
+        ('meat', 'Meat & Poultry'),
+        ('dairy', 'Dairy'),
+        ('spices', 'Spices & Herbs'),
+        ('beverages', 'Beverages'),
+        ('traditional_dishes', 'Traditional Dishes'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    name_amharic = models.CharField(max_length=200, blank=True)
+    category = models.CharField(max_length=30, choices=FOOD_CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    
+    # Nutritional information (per 100g)
+    calories_per_100g = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    protein_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    carbs_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    fat_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    fiber_per_100g = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    # Availability & Cultural info
+    seasonal_availability = models.CharField(max_length=200, blank=True)
+    cultural_significance = models.TextField(blank=True)
+    preparation_notes = models.TextField(blank=True)
+    
+    # Dietary compatibility
+    is_vegetarian = models.BooleanField(default=False)
+    is_vegan = models.BooleanField(default=False)
+    is_gluten_free = models.BooleanField(default=False)
+    is_fasting_friendly = models.BooleanField(default=False, help_text="Orthodox fasting compatible")
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.name_amharic})" if self.name_amharic else self.name
+    
