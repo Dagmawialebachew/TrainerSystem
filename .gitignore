@@ -1,51 +1,51 @@
-# Python
+# ---- Python ----
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 *.pyd
-*.pyc
-*.pdb
+
+# ---- Django / SQLite ----
 *.log
-
-# Virtual environments
-env/
-venv/
-.venv/
-ENV/
-ENV.bak/
-venv.bak/
-
-# Django specific
-*.sqlite3
-db.sqlite3
 *.pot
-*.mo
+*.pyc
+db.sqlite3
+db.sqlite3-journal
 
-# Media and static files (optional, if you serve media via cloud/CDN or PythonAnywhere static mapping)
-media/
-staticfiles/
-
-# Environment variables
+# ---- Environments ----
 .env
-*.env
+venv/
+env/
+ENV/
+.env.local
+.env.*.local
 
-# IDEs and editors
+# ---- Static / Media (collected or uploaded) ----
+
+
+
+# ---- VSCode / PyCharm ----
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
 
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
+# ---- Byte-compiled / distribution ----
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+*.egg-info/
+MANIFEST
 
-# PythonAnywhere temporary files
-*.pyc
-
-# Coverage and test reports
+# ---- Testing / Coverage ----
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
@@ -56,13 +56,26 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# Logs
-*.log
+# ---- Reports / PDFs ----
+*.pdf
 
-# Node.js / front-end if any
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- MyPy / Pyright ----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ---- Node / Frontend (if using Tailwind, npm, etc.) ----
 node_modules/
-npm-debug.log
-yarn-error.log
-
-# Mac specific
-*.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.next/
+out/
