@@ -25,7 +25,7 @@ class PaymentDashboardView(LoginRequiredMixin, TrainerRequiredMixin,Subscription
         
         payment_stats = Payment.objects.filter(
     trainer=trainer_profile,
-    created_at__date__gte=thirty_days_ago
+    paid_date__date__gte=thirty_days_ago
 ).aggregate(
     total_revenue=Sum('amount'),
     completed_payments=Count('id', filter=Q(status='completed')),
@@ -35,7 +35,7 @@ class PaymentDashboardView(LoginRequiredMixin, TrainerRequiredMixin,Subscription
         # Recent payments
         recent_payments = Payment.objects.filter(
             trainer=trainer_profile
-        ).order_by('-created_at')[:10]
+        ).order_by('-paid_date')[:10]
         
         # Subscription info
         subscription = getattr(trainer_profile, 'subscription', None)
@@ -125,7 +125,7 @@ class BillingHistoryView(LoginRequiredMixin, TrainerRequiredMixin,SubscriptionRe
     
     def get_queryset(self):
         trainer_profile = get_object_or_404(TrainerProfile, user=self.request.user)
-        queryset = Payment.objects.filter(trainer=trainer_profile).order_by('-created_at')
+        queryset = Payment.objects.filter(trainer=trainer_profile).order_by('-updated_at')
         
 
         # Filtering

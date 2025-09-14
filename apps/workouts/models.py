@@ -2,6 +2,8 @@ from django.db import models
 from django.urls import reverse
 import json
 
+from fitness_saas import settings
+
 class WorkoutPlan(models.Model):
     """Workout plans created by trainers for clients"""
     
@@ -69,6 +71,14 @@ class Exercise(models.Model):
         ('functional', 'Functional'),
         ('sports', 'Sports Specific'),
     ]
+    trainer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='exercises'
+    )
+
     
     EQUIPMENT_CHOICES = [
         ('bodyweight', 'Bodyweight'),
@@ -85,12 +95,12 @@ class Exercise(models.Model):
     description = models.TextField()
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     equipment_needed = models.CharField(max_length=30, choices=EQUIPMENT_CHOICES, default='bodyweight')
-    muscle_groups = models.CharField(max_length=200, help_text="Comma-separated muscle groups")
+    muscle_groups = models.CharField(max_length=200, help_text="Comma-separated muscle groups", null = True, blank = True)
     
     # Instructions
-    setup_instructions = models.TextField(help_text="How to set up the exercise")
-    execution_steps = models.TextField(help_text="Step-by-step execution")
-    safety_tips = models.TextField(blank=True)
+    setup_instructions = models.TextField(help_text="How to set up the exercise", null=True, blank=True)
+    execution_steps = models.TextField(help_text="Step-by-step execution", null=True, blank=True)
+    safety_tips = models.TextField(blank=True, null=True)
     
     # Media
     demonstration_video_url = models.URLField(blank=True)
@@ -102,9 +112,28 @@ class Exercise(models.Model):
     
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_global = models.BooleanField(default=True)
     
     class Meta:
         ordering = ['name']
     
     def __str__(self):
         return self.name
+    
+    
+class ExerciseProgress(models.Model):
+    client = models.ForeignKey('clients.ClientProfile', on_delete=models.CASCADE, related_name='exercise_progress')
+    workout_plan = models.ForeignKey('workouts.WorkoutPlan', on_delete=models.CASCADE, related_name='progress')
+    day = models.CharField(max_length=20)
+    exercise_name = models.CharField(max_length=120)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('client', 'workout_plan', 'day', 'exercise_name')
+        indexes = [
+            models.Index(fields=['client', 'day']),
+            models.Index(fields=['workout_plan', 'day']),
+        ]
+
+    def __str__(self):
+        return f"{self.client} - {self.exercise_name} ({self.day})"

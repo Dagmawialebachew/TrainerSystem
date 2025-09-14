@@ -1,6 +1,7 @@
 from apps.trainers.models import TrainerProfile
 from django.db import models
 from django.urls import reverse
+from datetime import datetime
 
 class Payment(models.Model):
     """Track payments from clients to trainers"""
@@ -31,7 +32,7 @@ class Payment(models.Model):
     )
     
     # Payment details
-    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES)
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, default = 'session')
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=3, default='ETB')
     
@@ -41,7 +42,7 @@ class Payment(models.Model):
     
     # Dates
     due_date = models.DateField()
-    paid_date = models.DateTimeField(null=True, blank=True)
+    paid_date = models.DateTimeField(null=True, blank=True, default=datetime.now())
     
     # Description and notes
     description = models.TextField(blank=True)

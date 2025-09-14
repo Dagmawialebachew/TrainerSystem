@@ -1,0 +1,4 @@
+{% url 'workouts:list' as trainer_back_url %}
+{% with is_trainer=True can_complete=False show_trainer_tools=True back_url=trainer_back_url %}
+  {% include "workouts/detail_shared.html" %}
+{% endwith %}

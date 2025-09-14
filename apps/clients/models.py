@@ -80,7 +80,7 @@ class ClientProfile(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.trainer.business_name or self.trainer.user.get_full_name()}"
+     return f"{self.user.get_full_name()} — ({self.get_fitness_goal_display()})"
     
     def get_absolute_url(self):
         return reverse('clients:profile')

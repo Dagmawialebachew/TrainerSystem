@@ -1,0 +1,29 @@
+<div id="workoutOverlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden grid place-items-center p-4" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6 sm:p-7 ring-1 ring-black/10 relative" data-modal-surface>
+    <button type="button" onclick="closeWorkoutOverlay()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-300" aria-label="Close guided workout">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h2 id="overlayTitle" class="text-xl sm:text-2xl font-extrabold text-primary-600"></h2>
+    <p id="progressTracker" class="text-sm text-gray-500 mt-1">
+      Exercise <span id="progressCurrent">1</span> of <span id="progressTotal">0</span>
+    </p>
+
+    <div class="mt-4 rounded-xl overflow-hidden ring-1 ring-black/10 relative">
+      <!-- Placeholder for generated iframe -->
+      <div id="exerciseVideoWrapper" class="w-full aspect-video"></div>
+    </div>
+
+    <p id="exerciseDetails" class="text-sm text-gray-700 mt-3"></p>
+    <p id="motivationalQuote" class="text-sm italic text-primary-600 mt-1"></p>
+
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+      <button type="button" onclick="markCurrentExerciseDone()" class="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 shadow focus:outline-none focus:ring-2 focus:ring-emerald-300">
+        <i class="fas fa-check-circle mr-1"></i> Mark as Done
+      </button>
+      <button type="button" onclick="nextExercise()" class="rounded-full bg-white text-primary-700 hover:bg-gray-50 px-5 py-2 shadow focus:outline-none focus:ring-2 focus:ring-primary-300">
+        Next →
+      </button>
+    </div>
+  </div>
+</div>

@@ -32,7 +32,16 @@
                 {% if field.name != 'preferred_workout_days' %}
                 <div class="flex flex-col">
                     <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
-                    {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+{% if field.field.widget.input_type == "password" %}
+  <div class="relative">
+    {{ field|add_class:"password-field w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+    <button type="button" onclick="togglePassword(this)" class="absolute right-3 top-2 text-sm text-primary-500 hover:text-primary-700">
+      Show
+    </button>
+  </div>
+{% else %}
+  {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm" }}
+{% endif %}
                     {% if field.errors %}
                         <p class="text-sm text-warning-700 mt-1">{{ field.errors|join:", " }}</p>
                     {% endif %}

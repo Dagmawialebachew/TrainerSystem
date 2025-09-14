@@ -1,0 +1,397 @@
+<script>
+  const CLIENT_ID = "{{ client_id|default:workout_plan.client.id }}";
+  const PLAN_ID = "{{ plan_id|default:workout_plan.id }}";
+  const CURRENT_DAY = "{{ current_day }}";
+  const FITNESS_LEVEL = "{{ fitness_level|default:workout_plan.difficulty }}";
+  const IS_TRAINER = {{ user.is_trainer|yesno:"true,false" }};
+</script>
+
+<!--api view--->
+
+<script>
+  async function fetchTrainerAnalytics(clientId, planId) {
+    const url = new URL("{% url 'dashboard_api:analysis' %}", window.location.origin);
+    url.searchParams.set("client_id", clientId);
+    url.searchParams.set("plan_id", planId);
+
+    try {
+      const res = await fetch(url.toString(), {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+      if (!res.ok) throw new Error("Failed to load analytics");
+
+      const data = await res.json();
+
+      document.getElementById("analytics-week").textContent = data.completed_this_week ?? "—";
+      document.getElementById("analytics-adherence").textContent = `${data.adherence ?? "—"}%`;
+      document.getElementById("analytics-streak").textContent = data.streak ?? "—";
+
+      if (data.notes) {
+        document.getElementById("analytics-notes-text").textContent = data.notes;
+        document.getElementById("analytics-notes").classList.remove("hidden");
+      }
+    } catch (err) {
+      console.warn("Analytics fetch failed:", err);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    {% if is_trainer %}
+      fetchTrainerAnalytics("{{ client_id }}", "{{ plan_id }}");
+    {% endif %}
+  });
+</script>
+
+
+<script>
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+ window.toggleDayPanel = function(btn) {
+  const icon = btn.querySelector('.fa-chevron-right');
+  const container = btn.closest('article');
+  const panel = container.querySelector('[id^="panel-"]');
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', !expanded);
+  panel?.classList.toggle('hidden');
+  icon?.classList.toggle('rotate-90');
+};
+
+
+// Extract YouTube ID
+function getVideoIDFromURL(url) {
+  if (!url) return '';
+  const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+  const match = url.match(reg);
+  return match ? match[1] : '';
+}
+
+function generateYouTubeIframe(videoID, width = "100%", height = "100%") {
+  if (!videoID) return '';
+  const embedURL = `https://www.youtube.com/embed/${videoID}?si=r11yhymGzRxjSbMT`;
+  return `<iframe width="${width}" height="${height}" src="${embedURL}" 
+    title="YouTube video player" frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+}
+
+function openVideoModal(watchURL) {
+  const modal = document.getElementById('videoModal');
+  const frameContainer = document.getElementById('videoFrameContainer'); // wrapper div
+  const fallbackBtn = document.getElementById('videoFallbackBtn');
+
+  // Reset first
+  frameContainer.innerHTML = '';
+  fallbackBtn.classList.add('hidden');
+  fallbackBtn.href = watchURL;
+
+  const videoID = getVideoIDFromURL(watchURL);
+
+  if (!videoID) {
+    // Invalid URL, show fallback
+    fallbackBtn.classList.remove('hidden');
+    modal.classList.remove('hidden');
+    trapFocus(modal);
+    return;
+  }
+
+  // Insert iframe dynamically
+  frameContainer.innerHTML = generateYouTubeIframe(videoID);
+
+  const iframe = frameContainer.querySelector('iframe');
+  iframe.onerror = () => {
+    // If embed fails (like error 153), remove iframe and show fallback
+    frameContainer.innerHTML = '';
+    fallbackBtn.classList.remove('hidden');
+  };
+
+  modal.classList.remove('hidden');
+  trapFocus(modal);
+}
+
+function closeVideoModal() {
+  const modal = document.getElementById('videoModal');
+  const frameContainer = document.getElementById('videoFrameContainer');
+  frameContainer.innerHTML = ''; // remove iframe
+  modal.classList.add('hidden');
+  releaseFocus();
+}
+
+  let workoutQueue = [];
+  let currentIndex = 0;
+
+  function allExerciseCards() {
+    return Array.from(document.querySelectorAll('li[data-exercise-card]'));
+  }
+
+  function collectExercisesForToday() {
+    const openPanels = Array.from(document.querySelectorAll('[id^="panel-"]:not(.hidden)'));
+    const cards = openPanels.flatMap(p => Array.from(p.querySelectorAll('li[data-exercise-card]')));
+    const chosen = cards.length ? cards : allExerciseCards();
+    return chosen.map(el => ({
+      el,
+      day: el.dataset.day,
+      name: el.dataset.name,
+      sets: el.dataset.sets,
+      reps: el.dataset.reps,
+      video: el.dataset.video || '',
+      done: el.getAttribute('data-done') === 'true'
+    })).filter(e => !e.done); // avoid already-completed
+  }
+
+  function queueSingleExercise(btn) {
+    if (IS_TRAINER) return;
+    const card = btn.closest('[data-exercise-card]');
+    const done = card.getAttribute('data-done') === 'true';
+    if (done) return;
+    workoutQueue = [{
+      el: card,
+      day: card.dataset.day,
+      name: card.dataset.name,
+      sets: card.dataset.sets,
+      reps: card.dataset.reps,
+      video: card.dataset.video || ''
+    }];
+    currentIndex = 0;
+    showExercise(workoutQueue[currentIndex]);
+    const overlay = document.getElementById('workoutOverlay');
+    overlay.classList.remove('hidden');
+    trapFocus(overlay);
+    fetchMotivation(FITNESS_LEVEL);
+  }
+
+  function startWorkoutFlow() {
+    console.log('here is the value of is trainer', IS_TRAINER)
+    if (IS_TRAINER) return;
+    workoutQueue = collectExercisesForToday();
+    if (!workoutQueue.length) {
+      alert('No exercises available.');
+      return;
+    }
+    currentIndex = 0;
+    showExercise(workoutQueue[currentIndex]);
+    const overlay = document.getElementById('workoutOverlay');
+    overlay.classList.remove('hidden');
+    trapFocus(overlay);
+    fetchMotivation(FITNESS_LEVEL);
+  }
+
+  function formatYouTubeURL(url) {
+  if (!url) return '';
+  const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+  const match = url.match(reg);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+}
+
+
+function getYouTubeThumbnail(url) {
+  if (!url) return '';
+  const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+  const match = url.match(reg);
+  return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : '';
+}
+
+function extractYouTubeID(url) {
+  if (!url) return '';
+  const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+  const match = url.match(reg);
+  return match ? match[1] : '';
+}
+
+
+function showExercise(ex) {
+  // Update overlay title
+  const overlayTitle = document.getElementById('overlayTitle');
+  if (overlayTitle) overlayTitle.textContent = ex.name;
+
+  // Update details
+  const exerciseDetails = document.getElementById('exerciseDetails');
+  if (exerciseDetails) exerciseDetails.textContent = `Sets: ${ex.sets} · Reps: ${ex.reps}`;
+
+  // Update video wrapper
+  const wrapper = document.getElementById('exerciseVideoWrapper');
+  if (wrapper) {
+    if (ex.video) {
+      const videoID = extractYouTubeID(ex.video);
+      wrapper.innerHTML = generateYouTubeIframe(videoID);
+    } else {
+      wrapper.innerHTML = `
+        <div class="w-full aspect-video flex flex-col items-center justify-center bg-gray-100 text-gray-500 rounded-xl">
+          <i class="fas fa-dumbbell text-5xl mb-2"></i>
+          <p class="font-medium">No demo video available</p>
+          <p class="text-sm text-gray-400">Focus on proper form!</p>
+        </div>
+      `;
+    }
+  }
+
+  // Progress counters
+  const progressCurrent = document.getElementById('progressCurrent');
+  if (progressCurrent) progressCurrent.textContent = (currentIndex ?? 0) + 1;
+
+  const progressTotal = document.getElementById('progressTotal');
+  if (progressTotal) progressTotal.textContent = workoutQueue?.length ?? 0;
+}
+
+// Extract ID
+function extractYouTubeID(url) {
+  if (!url) return '';
+  const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/;
+  const match = url.match(reg);
+  return match ? match[1] : '';
+}
+
+
+
+  function closeWorkoutOverlay() {
+    const overlay = document.getElementById('workoutOverlay');
+    const frame = document.getElementById('exerciseVideo');
+     const wrapper = document.getElementById('exerciseVideoWrapper');
+
+  if (wrapper) wrapper.innerHTML = ''; // remove iframe -> stops video
+  if (overlay) overlay.classList.add('hidden');
+    if (frame) frame.src = '';
+    overlay?.classList.add('hidden');
+    releaseFocus();
+  }
+
+  async function markCurrentExerciseDone() {
+    const ex = workoutQueue[currentIndex];
+    try {
+      await markExerciseCompleteAPI(ex.name, ex.day);
+      markCardAsDone(ex.el);
+      updateDayProgress(ex.day);
+      nextExercise();
+    } catch {
+      alert('Could not save progress. Try again.');
+    }
+  }
+
+  function nextExercise() {
+    currentIndex++;
+    if (currentIndex < workoutQueue.length) {
+      showExercise(workoutQueue[currentIndex]);
+    } else {
+      closeWorkoutOverlay();
+      setTimeout(() => alert('Workout complete! 💪'), 50);
+    }
+  }
+
+  async function markExerciseCompleteAPI(exerciseName, day) {
+    const url = "{% url 'dashboard_api:complete' %}";
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+      body: JSON.stringify({ client_id: "{{ client_id }}", plan_id: "{{ plan_id }}", day: day || "{{ current_day }}", exercise_name: exerciseName })
+    });
+    if (!res.ok) throw new Error('Save failed');
+    const data = await res.json();
+    if (data?.streak != null) {
+      const el = document.getElementById('streak-count');
+      if (el) el.textContent = data.streak;
+    }
+    return data;
+  }
+
+  async function markExerciseDoneFromCard(buttonEl) {
+    const card = buttonEl.closest('[data-exercise-card]');
+    const name = card?.dataset.name;
+    const day = card?.dataset.day || "{{ current_day }}";
+    try {
+      await markExerciseCompleteAPI(name, day);
+      markCardAsDone(card);
+      updateDayProgress(day);
+    } catch {
+      alert('Could not save progress.');
+    }
+  }
+
+  function markCardAsDone(cardEl) {
+    if (!cardEl) return;
+    cardEl.setAttribute('data-done', 'true');
+    const btn = cardEl.querySelector('[data-action="complete"]');
+    if (btn) {
+      btn.textContent = "✅ Completed";
+      btn.disabled = true;
+      btn.classList.add("text-gray-400", "cursor-not-allowed");
+    }
+    if (!cardEl.querySelector('.badge-done')) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-done absolute top-2 right-2 bg-emerald-600 text-white text-xs px-2 py-1 rounded-full shadow';
+      badge.textContent = 'Done';
+      cardEl.appendChild(badge);
+    }
+  }
+
+  function updateDayProgress(dayName) {
+    const dayRoot = document.getElementById(`day-${dayName}`);
+    if (!dayRoot) return;
+    const cards = dayRoot.querySelectorAll('[data-exercise-card]');
+    const total = cards.length;
+    const done = Array.from(cards).filter(c => c.getAttribute('data-done') === 'true').length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const bar = document.getElementById(`progress-${dayName}`);
+    if (bar) bar.style.width = pct + '%';
+  }
+
+  async function fetchMotivation(level) {
+    try {
+      const url = new URL("{% url 'dashboard_api:motivation' %}", window.location.origin);
+      url.searchParams.set("level", level);
+      const res = await fetch(url.toString(), { headers: { "X-Requested-With": "XMLHttpRequest" } });
+      if (res.ok) {
+        const data = await res.json();
+        const q = document.getElementById('motivationalQuote');
+        if (q) q.textContent = data.message;
+      }
+    } catch {}
+  }
+
+  // Accessibility: focus trap
+  let previousFocus = null;
+  function trapFocus(container) {
+    previousFocus = document.activeElement;
+    const focusables = container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    function loop(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    container.addEventListener('keydown', loop);
+    container.dataset.trap = '1';
+    setTimeout(() => first?.focus(), 10);
+  }
+  function releaseFocus() {
+    const trapped = document.querySelector('[data-trap="1"]');
+    if (trapped) trapped.removeAttribute('data-trap');
+    previousFocus?.focus?.();
+  }
+
+  // Global close handlers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeVideoModal();
+      closeWorkoutOverlay();
+    }
+  });
+  document.getElementById('videoModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'videoModal') closeVideoModal();
+  });
+  document.getElementById('workoutOverlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'workoutOverlay') closeWorkoutOverlay();
+  });
+
+  // Init
+    const el = document.getElementById("day-{{ current_day }}");
+    if (el && !prefersReducedMotion) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    document.querySelectorAll('[id^="day-"]').forEach(dayEl => {
+      const dayName = dayEl.id.replace('day-', '');
+      updateDayProgress(dayName);
+    });
+
+
+</script>

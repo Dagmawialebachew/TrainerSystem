@@ -1,0 +1,5 @@
+{% block content %}
+{% with is_trainer=True can_complete=True show_trainer_tools=Fale back_url=back_url %}
+  {% include "workouts/detail_shared.html" %}
+{% endwith %}
+{% endblock %}

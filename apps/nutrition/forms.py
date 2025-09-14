@@ -114,8 +114,10 @@ class TrainerFoodForm(TailwindFormMixin, forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.trainer = kwargs.pop('trainer', None)
         super().__init__(*args, **kwargs)
-
+        if self.trainer:
+          self.fields['category'].queryset = TrainerFood.objects.filter(trainer=self.trainer)
         # Only apply defaults when creating a new object (not editing)
         if not self.instance.pk:
             self.fields["category"].initial = "grains"

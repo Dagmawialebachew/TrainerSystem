@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block form_title %}Add Exercise{% endblock %}
+{% block form_method %}post{% endblock %}
+{% block back_url %}{% url 'workouts:exercise_list' %}{% endblock %}
+{% block submit_text %}Save Exercise{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8">
+
+    <div>
+        <a href="{% url 'workouts:exercise_list' %}" class="text-accent-500 font-medium hover:text-accent-700 flex items-center space-x-2">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </a>
+    </div>
+
+    <form method="post" novalidate class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Tabs -->
+        <div class="flex space-x-2 overflow-x-auto pb-2 border-b border-gray-200 w-full">
+            <button type="button" class="tab-btn px-4 min-w-max py-2 rounded-lg bg-primary-100 text-primary-800 font-semibold" data-tab="basic">Basic Info</button>
+            <button type="button" class="tab-btn px-4 min-w-max py-2 rounded-lg text-primary-600 font-semibold" data-tab="instructions">Instructions</button>
+            <button type="button" class="tab-btn px-4 min-w-max py-2 rounded-lg text-primary-600 font-semibold" data-tab="media">Media</button>
+            <button type="button" class="tab-btn px-4 min-w-max py-2 rounded-lg text-primary-600 font-semibold" data-tab="additional">Additional Info</button>
+        </div>
+
+        <!-- Tabs Content -->
+        <div class="tabs-content space-y-4">
+
+            <!-- Basic Info -->
+            <div class="tab-panel" id="basic">
+                {% for field in form %}
+                    {% if field.name in "name category equipment_needed muscle_groups difficulty_level is_active" %}
+                    <div class="flex flex-col mb-4">
+                        <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+                        {{ field|add_class:"px-4 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400" }}
+                        {% if field.help_text %}<p class="text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                        <p class="text-xs text-red-600 field-error hidden"></p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Instructions -->
+            <div class="tab-panel hidden" id="instructions">
+                {% for field in form %}
+                    {% if field.name in "setup_instructions execution_steps safety_tips" %}
+                    <div class="flex flex-col mb-4">
+                        <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+                        {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400" }}
+                        {% if field.help_text %}<p class="text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                        <p class="text-xs text-red-600 field-error hidden"></p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Media -->
+            <div class="tab-panel hidden" id="media">
+                {% for field in form %}
+                    {% if field.name in "demonstration_video_url image" %}
+                    <div class="flex flex-col mb-4">
+                        <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+                        {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400" }}
+                        {% if field.help_text %}<p class="text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                        <p class="text-xs text-red-600 field-error hidden"></p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Additional Info -->
+            <div class="tab-panel hidden" id="additional">
+                {% for field in form %}
+                    {% if field.name in "modifications" %}
+                    <div class="flex flex-col mb-4">
+                        <label class="block text-sm font-medium text-primary-800 mb-1">{{ field.label }}</label>
+                        {{ field|add_class:"w-full px-4 py-2 border border-primary-300 rounded-lg focus:ring-2 focus:ring-primary-400" }}
+                        {% if field.help_text %}<p class="text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+                        <p class="text-xs text-red-600 field-error hidden"></p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+        </div>
+
+       <!-- Submit Button -->
+<div class="mt-4">
+    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-semibold">
+        Save Exercise
+    </button>
+</div>
+
+<!-- JS: Tabs + Validation + Top Alert -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    const form = document.querySelector('form');
+
+    // Tab switching
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('bg-primary-100','text-primary-800'));
+            tabs.forEach(t => t.classList.add('text-primary-600'));
+            panels.forEach(p => p.classList.add('hidden'));
+
+            btn.classList.add('bg-primary-100','text-primary-800');
+            btn.classList.remove('text-primary-600');
+            document.getElementById(btn.dataset.tab).classList.remove('hidden');
+        });
+    });
+    tabs[0]?.click();
+
+    // Custom validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let valid = true;
+        let firstInvalid = null;
+
+        // Remove previous error messages and alerts
+        document.querySelectorAll('.field-error').forEach(err => {
+            err.textContent = '';
+            err.classList.add('hidden');
+        });
+        document.querySelectorAll('.tab-alert').forEach(alert => alert.remove());
+
+        const allFields = form.querySelectorAll('input, textarea, select');
+
+        allFields.forEach(f => {
+            const panel = f.closest('.tab-panel');
+            if (!panel) return;
+            let errorEl = f.nextElementSibling;
+            if (!errorEl || !errorEl.classList.contains('field-error')) {
+                errorEl = panel.querySelector('.field-error');
+            }
+
+            if (f.hasAttribute('required') && !f.value.trim()) {
+                valid = false;
+                firstInvalid = firstInvalid || f;
+
+                // Highlight field
+                f.classList.add('border-red-500', 'ring-red-300');
+
+                // Show inline error
+                if (errorEl) {
+                    errorEl.textContent = 'This field is required.';
+                    errorEl.classList.remove('hidden');
+                }
+
+                // Switch to tab
+                tabs.forEach(t => t.classList.remove('bg-primary-100','text-primary-800'));
+                tabs.forEach(t => t.classList.add('text-primary-600'));
+                panels.forEach(p => p.classList.add('hidden'));
+                const tabBtn = document.querySelector(`.tab-btn[data-tab="${panel.id}"]`);
+                tabBtn.classList.add('bg-primary-100','text-primary-800');
+                tabBtn.classList.remove('text-primary-600');
+                panel.classList.remove('hidden');
+            } else {
+                f.classList.remove('border-red-500', 'ring-red-300');
+            }
+        });
+
+        if (!valid) {
+            // Show top alert at form level
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'tab-alert mb-4 p-3 bg-red-100 text-red-700 rounded font-medium';
+            alertDiv.textContent = 'Some fields are missing. Please check the highlighted fields.';
+            form.prepend(alertDiv);
+
+            if (firstInvalid) firstInvalid.focus();
+        } else {
+            form.submit();
+        }
+    });
+});
+</script>
+{%endblock%}

@@ -116,7 +116,7 @@ class TrainerFood(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return f"{self.name} ({self.name_amharic})" if self.name_amharic else self.name
+        return f"{self.name}" 
 
 
 class EthiopianFood(models.Model):

@@ -263,27 +263,23 @@ class WorkoutPlanView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
         
         return context
     
-class WorkoutPlanDetailView(LoginRequiredMixin, ClientRequiredMixin, DetailView):
+from apps.workouts.utils import enrich_workout_structure
+
+class WorkoutPlanDetailView(LoginRequiredMixin, DetailView):
     model = WorkoutPlan
-    template_name = "clients/workout_plan_detail.html"
+    template_name = "workouts/detail_client.html"
     context_object_name = "workout_plan"
-
-    def get_queryset(self):
-        # Restrict plans to the logged-in client
-        client_profile = get_object_or_404(ClientProfile, user=self.request.user)
-        return WorkoutPlan.objects.filter(client=client_profile)
-    
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        workout_plan = self.get_object()
-
-        # Add formatted structure
-
-        
-        context['workout_structure'] = workout_plan.workout_structure if isinstance(workout_plan.workout_structure, list) else []
-        print('this is the map passed',context['workout_structure'])
-
-        return context
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(enrich_workout_structure(self.object))
+        back_url = reverse_lazy('clients:workout_plan')
+        ctx.update({
+            "is_trainer": False,
+            "can_complete": True,
+            "show_trainer_tools": False,
+            'back_url': back_url if back_url else reverse_lazy('clients:workout_plan'),
+        })
+        return ctx
     
 class MealPlanView(LoginRequiredMixin, ClientRequiredMixin, TemplateView):
     template_name = "clients/meal_plan.html"

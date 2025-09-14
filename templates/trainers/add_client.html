@@ -5,5 +5,15 @@
 {% block back_url %}{% url 'trainers:client_list' %}{% endblock %}
 {% block back_text %}Back to Clients{% endblock %}
 
-{% block }
+{% block extra_js %}
+<script>
+function togglePassword(btn) {
+  const input = btn.closest('.relative').querySelector('.password-field');
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? 'Hide' : 'Show';
+}
+</script>
 
+{%endblock%}

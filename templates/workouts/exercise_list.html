@@ -1,39 +1,194 @@
-{% extends 'base.html' %}
+{% extends "list_base.html" %}
+{% load workout_extras %}
 
-{% block title %}Exercises - {{ branding.brand_name }}{% endblock %}
+{% block list_title %}My Exercises{% endblock %}
 
-{% block content %}
-<div class="space-y-6">
-    <h1 class="text-2xl font-bold text-gray-900">Exercises</h1>
+{% block header_actions %}
+<div class="flex flex-wrap gap-4 mt-6">
+  <!-- Add Exercise -->
+  <a href="{% url 'workouts:exercise_add' %}"
+     class="group inline-flex items-center gap-3 px-6 py-2 rounded-xl bg-success-600 text-white shadow-md hover:scale-105 transition">
+    <i class="fas fa-dumbbell"></i>
+    <span>Add Exercise</span>
+  </a>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for exercise in exercises %}
-            <div class="bg-white shadow rounded-lg p-4 flex flex-col justify-between">
-                <h3 class="text-lg font-medium text-gray-900">{{ exercise.name }}</h3>
-                <p class="text-sm text-gray-500">{{ exercise.category|title }}</p>
-                <div class="mt-4">
-                    <a href="{% url 'workouts:exercise_detail' exercise.pk %}" class="text-primary hover:underline text-sm font-medium">View</a>
-                </div>
-            </div>
-        {% empty %}
-            <div class="col-span-full text-center py-10">
-                <p class="text-gray-500">No exercises found.</p>
-            </div>
-        {% endfor %}
+  <!-- Create Plan -->
+  <a href="{% url 'workouts:create' %}"
+     class="bg-gradient-to-r from-primary-600 to-primary-400 text-white px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 transition flex items-center space-x-2">
+    <i class="fas fa-clipboard-list"></i>
+    <span>Create Plan</span>
+  </a>
+
+  <!-- See Workouts -->
+  <a href="{% url 'workouts:list' %}"
+     class="inline-flex items-center space-x-2 px-6 py-2 rounded-xl font-semibold shadow-lg hover:scale-105 transition
+            bg-gradient-to-r from-warning-600 to-warning-400 text-white">
+    <i class="fas fa-running"></i>
+    <span>See Workout List</span>
+  </a>
+</div>
+{% endblock %}
+
+{% block cards_view %}
+{# --- Cards (keep UI exactly as you had) --- #}
+{% for exercise in exercises %}
+  <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-4 transition transform hover:scale-[1.01]">
+    <!-- Media + Header -->
+    <div class="flex items-start gap-4">
+      {% if exercise.image %}
+        <img src="{{ exercise.image.url }}" alt="{{ exercise.name }} thumbnail"
+             class="w-20 h-20 rounded-xl object-cover ring-1 ring-black/10"
+             loading="lazy" decoding="async">
+      {% else %}
+        <div class="w-20 h-20 rounded-xl bg-primary-50 text-primary-500 grid place-items-center ring-1 ring-black/10">
+          <i class="fas fa-dumbbell text-xl"></i>
+        </div>
+      {% endif %}
+
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="text-xl font-semibold text-primary-900 leading-tight name-text">
+            {{ exercise.name }}
+          </h3>
+          {% if exercise.demonstration_video_url %}
+          <a href="{{ exercise.demonstration_video_url }}" target="_blank" rel="noopener noreferrer"
+             class="text-primary-500 hover:text-primary-700 transition shrink-0" title="Watch demo">
+            <i class="fas fa-play-circle text-xl"></i>
+          </a>
+          {% endif %}
+        </div>
+        <p class="text-sm text-primary-500 truncate">Category: {{ exercise.get_category_display }}</p>
+        <p class="text-sm text-primary-500 truncate">Equipment: {{ exercise.get_equipment_needed_display }}</p>
+      </div>
     </div>
 
-    {% if is_paginated %}
-        <div class="mt-6">
-            <nav class="flex justify-center space-x-2">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Previous</a>
-                {% endif %}
-                <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
-                {% endif %}
-            </nav>
-        </div>
+    <!-- Muscle Groups -->
+    {% if exercise.muscle_groups %}
+    <div class="flex flex-wrap gap-2">
+      {% for muscle in exercise.muscle_groups|split:"," %}
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
+        <i class="fas fa-bone"></i> {{ muscle|title }}
+      </span>
+      {% endfor %}
+    </div>
     {% endif %}
-</div>
+
+    <!-- Badges -->
+    <div class="flex flex-wrap gap-2">
+      {% if exercise.difficulty_level %}
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-800">
+        <i class="fas fa-bolt"></i> {{ exercise.difficulty_level|title }}
+      </span>
+      {% endif %}
+      {% if exercise.calories_burned %}
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800">
+        <i class="fas fa-fire"></i> {{ exercise.calories_burned }} kcal
+      </span>
+      {% endif %}
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
+        <i class="fas fa-clock"></i> Added {{ exercise.created_at|date:"M j, Y" }}
+      </span>
+    </div>
+
+    <!-- Expandable Sections -->
+    {% if exercise.setup_instructions or exercise.safety_tips %}
+    <div class="mt-1 flex flex-wrap gap-4">
+      {% if exercise.setup_instructions %}
+      <button class="toggle-btn text-xs text-primary-600 hover:underline focus:outline-none"
+              data-target="setup-{{ exercise.pk }}">
+        Setup
+      </button>
+      {% endif %}
+      {% if exercise.safety_tips %}
+      <button class="toggle-btn text-xs text-red-600 hover:underline focus:outline-none"
+              data-target="safety-{{ exercise.pk }}">
+        Safety
+      </button>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if exercise.setup_instructions %}
+    <div id="setup-{{ exercise.pk }}" class="hidden mt-2 text-gray-700 text-sm leading-relaxed">
+      {{ exercise.setup_instructions }}
+    </div>
+    {% endif %}
+
+    {% if exercise.safety_tips %}
+    <div id="safety-{{ exercise.pk }}" class="hidden mt-2 text-gray-700 text-sm leading-relaxed">
+      {{ exercise.safety_tips }}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex gap-2 pt-2">
+      <a href="{% url 'workouts:exercise_edit' exercise.pk %}"
+         class="bg-warning-400 text-white px-4 py-1 rounded-full inline-flex items-center gap-1 hover:scale-105 transition">
+        <i class="fas fa-edit"></i><span>Edit</span>
+      </a>
+      <a href="{% url 'workouts:exercise_delete' exercise.pk %}"
+         class="bg-danger-400 text-white px-4 py-1 rounded-full inline-flex items-center gap-1 hover:scale-105 transition">
+        <i class="fas fa-trash"></i><span>Delete</span>
+      </a>
+    </div>
+  </div>
+{% empty %}
+  <p class="text-center text-primary-400 col-span-full">
+    No exercises found{% if request.GET.search %} for "<span class="font-medium text-primary-600">{{ request.GET.search }}</span>"{% endif %}.
+    <a href="{% url 'workouts:exercise_add' %}" class="text-primary-600 hover:underline">Add one</a>
+  </p>
+{% endfor %}
+{% endblock %}
+
+{% block table_view %}
+{# --- Table view (moved here) --- #}
+<table class="min-w-full">
+  <thead class="bg-gray-50">
+    <tr>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Exercise</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Category</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Equipment</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Difficulty</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Calories</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Media</th>
+      <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-gray-200">
+    {% for exercise in exercises %}
+    <tr class="hover:bg-gray-50 transition">
+      <td class="px-6 py-4 text-sm font-medium text-gray-900 name-text">{{ exercise.name }}</td>
+      <td class="px-6 py-4 text-sm text-gray-600">{{ exercise.get_category_display }}</td>
+      <td class="px-6 py-4 text-sm text-gray-600">{{ exercise.get_equipment_needed_display }}</td>
+      <td class="px-6 py-4 text-sm">
+        {% if exercise.difficulty_level %}
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-800">
+            <i class="fas fa-bolt"></i> {{ exercise.difficulty_level|title }}
+          </span>
+        {% else %}
+          <span class="text-gray-500">—</span>
+        {% endif %}
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-600">
+        {% if exercise.calories_burned %}{{ exercise.calories_burned }} kcal{% else %}<span class="text-gray-400">—</span>{% endif %}
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-600">
+        {% if exercise.demonstration_video_url %}
+          <a href="{{ exercise.demonstration_video_url }}" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">
+            <i class="fas fa-play-circle"></i> Demo
+          </a>
+        {% elif exercise.image %}
+          <span class="text-gray-500">Image</span>
+        {% else %}
+          <span class="text-gray-400">—</span>
+        {% endif %}
+      </td>
+      <td class="px-6 py-4 space-x-3">
+        <a href="{% url 'workouts:exercise_edit' exercise.pk %}" class="text-warning-600 hover:underline">Edit</a>
+        <a href="{% url 'workouts:exercise_delete' exercise.pk %}" class="text-danger-600 hover:underline">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

@@ -144,6 +144,3 @@ class TailwindFormMixin:
                 widget.attrs.setdefault("class", self.default_input_class)
 
 
-
-
-

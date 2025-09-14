@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import json
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
@@ -8,10 +9,10 @@ from apps.schedules.forms import WorkoutScheduleForm
 from apps.schedules.models import WorkoutSchedule
 from apps.trainers.models import TrainerProfile
 from django.urls import reverse_lazy
-
+from django.db.models import Q
 from apps.core.mixins import TrainerRequiredMixin, SubscriptionRequiredMixin, TrainerOwnedMixin
 from .models import WorkoutPlan, Exercise
-from .forms import WorkoutPlanForm
+from .forms import ExerciseForm, WorkoutPlanForm
 
 class WorkoutPlanListView(LoginRequiredMixin, TrainerRequiredMixin, SubscriptionRequiredMixin, TrainerOwnedMixin, ListView):
     model = WorkoutPlan
@@ -53,6 +54,7 @@ class CreateWorkoutPlanView(LoginRequiredMixin, TemplateView):
         if plan_form.is_valid() and sched_form.is_valid():
             # 1) Save the plan
             plan = plan_form.save(commit=False)
+            print('this is the plan bassed', plan)
             plan.trainer = trainer
             plan.save()
 
@@ -61,6 +63,7 @@ class CreateWorkoutPlanView(LoginRequiredMixin, TemplateView):
             sched.trainer      = trainer
             sched.client       = plan.client
             sched.workout_plan = plan
+
             sched.save()
 
             # 3) Auto-generate sessions
@@ -75,26 +78,28 @@ class CreateWorkoutPlanView(LoginRequiredMixin, TemplateView):
             plan_form=plan_form,
             sched_form=sched_form
         ))
-class WorkoutPlanDetailView(LoginRequiredMixin,TrainerOwnedMixin, DetailView):
+from apps.workouts.utils import enrich_workout_structure
+
+class WorkoutPlanDetailView(LoginRequiredMixin, TrainerOwnedMixin, DetailView):
     model = WorkoutPlan
-    template_name = 'workouts/detail.html'
-    context_object_name = 'workout_plan'
-
+    template_name = "workouts/detail_trainer.html"
+    context_object_name = "workout_plan"
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        workout_plan = self.get_object()
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(enrich_workout_structure(self.object))
+        ctx.update({
+            "is_trainer": True,
+            "can_complete": False,
+            "show_trainer_tools": True,
+            "back_url": reverse_lazy("workouts:list"),
+            "analytics": {
+                "completed_this_week": 0,
+                "adherence": 0,
+                "streak": 0,
+            }
+        })
+        return ctx
 
-        # Add formatted structure
-        context['workout_structure'] = workout_plan.formatted_structure
-
-        # Optional: preload exercises by name for richer display
-        all_exercises = Exercise.objects.filter(is_active=True)
-        exercise_map = {e.name.lower(): e for e in all_exercises}
-        context['exercise_map'] = exercise_map
-        context['workout_structure'] = workout_plan.workout_structure if isinstance(workout_plan.workout_structure, list) else []
-        print('this is the map passed',context['workout_structure'])
-
-        return context
 
 class EditWorkoutPlanView(LoginRequiredMixin, TrainerRequiredMixin, SubscriptionRequiredMixin, TrainerOwnedMixin, UpdateView):
     model = WorkoutPlan
@@ -145,7 +150,6 @@ class EditWorkoutPlanView(LoginRequiredMixin, TrainerRequiredMixin, Subscription
 
         # Pass JSON string safely to template
         context['workout_json'] = json.dumps(workout_data)
-        print(context['workout_json'], 'this is the json passed')
         return context
 
 class DeleteWorkoutPlanView(LoginRequiredMixin, TrainerRequiredMixin, SubscriptionRequiredMixin, TrainerOwnedMixin, DeleteView):
@@ -157,31 +161,93 @@ class DeleteWorkoutPlanView(LoginRequiredMixin, TrainerRequiredMixin, Subscripti
         messages.success(request, 'Workout plan deleted successfully!')
         return super().delete(request, *args, **kwargs)
 
-class ExerciseListView(LoginRequiredMixin, ListView):
+from django.db.models import Q
+
+class TrainerExerciseListView(ListView):
     model = Exercise
     template_name = 'workouts/exercise_list.html'
     context_object_name = 'exercises'
-    paginate_by = 30
-    
-    def get_queryset(self):
-        queryset = Exercise.objects.filter(is_active=True)
-        
-        category = self.request.GET.get('category')
-        if category:
-            queryset = queryset.filter(category=category)
-        
-        equipment = self.request.GET.get('equipment')
-        if equipment:
-            queryset = queryset.filter(equipment_needed=equipment)
-        
-        return queryset.order_by('name')
+    paginate_by = 12
 
-class ExerciseDetailView(LoginRequiredMixin, DetailView):
-    model = Exercise
-    template_name = 'workouts/exercise_detail.html'
-    context_object_name = 'exercise'
-    
-    
-    
     def get_queryset(self):
-        return Exercise.objects.filter(is_active=True)
+        trainer = self.request.user  # Assuming your user has a related TrainerProfile
+        qs = Exercise.objects.filter(
+            Q(is_global=True) | Q(trainer=trainer),
+            is_active=True
+        )
+
+        query = self.request.GET.get("search", "").strip()
+        if query:
+            qs = qs.filter(
+                Q(name__icontains=query) |
+                Q(category__icontains=query) |
+                Q(muscle_groups__icontains=query) |
+                Q(equipment_needed__icontains=query)
+            )
+        return qs.order_by('name')
+
+
+
+class TrainerExerciseCreateView(CreateView):
+    model = Exercise
+    form_class = ExerciseForm
+    template_name = 'workouts/exercise_form.html'
+    success_url = reverse_lazy('workouts:exercise_list')
+    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trainer'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form,):
+        form.instance.trainer = self.request.user 
+        messages.success(self.request, 'Exercise is created succefully')
+        print('it is is valid')
+        # ensure trainer is saved
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+          # <-- this will show why it failed
+        return super().form_invalid(form)
+
+
+
+class TrainerExerciseUpdateView(UpdateView):
+    model = Exercise
+    form_class = ExerciseForm
+    template_name = 'workouts/exercise_form.html'
+    success_url = reverse_lazy('workouts:exercise_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trainer'] = self.request.user
+        return kwargs
+    
+    def form_valid(self, form,):
+        form.instance.trainer = self.request.user 
+        messages.success(self.request, 'Exercise is created succefully')        # ensure trainer is saved
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        # Highlight which section to open
+        self.extra_context = self.get_context_data(form=form)
+        
+        # Add error messages for the user
+        for field, errors in form.errors.items():
+            for error in errors:
+                if field == '__all__':
+                    messages.error(self.request, error)
+                else:
+                    messages.error(self.request, f"{form.fields[field].label}: {error}")
+        
+        return super().form_invalid(form)
+
+
+class TrainerExerciseDeleteView(DeleteView):
+    model = Exercise
+    template_name = 'workouts/exercise_confirm_delete.html'
+    success_url = reverse_lazy('workouts:exercise_list')
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Exercise is deleted successfully!')
+        return super().delete(request, *args, **kwargs)

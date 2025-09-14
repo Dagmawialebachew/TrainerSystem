@@ -30,46 +30,97 @@ class TrainerProfileForm(TailwindFormMixin, forms.ModelForm):
             self.fields['logo'].widget.template_name = 'widgets/custom_clearable_file_input.html'
 
 
+from django.core.exceptions import ValidationError
+from apps.accounts.models import User
+from django.utils.crypto import get_random_string
+
+
 class ClientInviteForm(TailwindFormMixin, forms.ModelForm):
-    email = forms.EmailField(required=True)
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        help_text="Unique username for login",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Username',
+            'class': 'w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
+        })
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Email (optional)',
+            'class': 'w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
+        })
+    )
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Set password (optional)',
+            'class': 'password-field w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
+        })
+    )
 
     class Meta:
         model = ClientProfile
-        fields = ['email', 'first_name', 'last_name', 'fitness_goal', 'fitness_level']
+        fields = ['first_name', 'last_name', 'username', 'email', 'fitness_goal', 'fitness_level']
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("This username is already taken.")
+        return username
 
     def save(self, commit=True):
-        # Create user account for client
+        password = self.cleaned_data.get('password') or get_random_string(length=12)
+
         user = User.objects.create_user(
-            username=self.cleaned_data['email'],
-            email=self.cleaned_data['email'],
+            username=self.cleaned_data['username'],
+            email=self.cleaned_data.get('email', ''),
             first_name=self.cleaned_data['first_name'],
             last_name=self.cleaned_data['last_name'],
+            password=password,
             role='client'
         )
 
-        # Create client profile
         client_profile = super().save(commit=False)
         client_profile.user = user
 
         if commit:
             client_profile.save()
 
+        self._generated_password = password
         return client_profile
 
+from django.contrib.auth.hashers import make_password
+
 class ClientProfileUpdateForm(TailwindFormMixin, forms.ModelForm):
-
-
     WEEKDAYS = [
-    ('Mon', 'Monday'), ('Tue', 'Tuesday'), ('Wed', 'Wednesday'),
-    ('Thu', 'Thursday'), ('Fri', 'Friday'), ('Sat', 'Saturday'), ('Sun', 'Sunday')
-]
+        ('Mon', 'Monday'), ('Tue', 'Tuesday'), ('Wed', 'Wednesday'),
+        ('Thu', 'Thursday'), ('Fri', 'Friday'), ('Sat', 'Saturday'), ('Sun', 'Sunday')
+    ]
 
     preferred_workout_days = forms.MultipleChoiceField(
         choices=WEEKDAYS,
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'flex flex-wrap gap-2'}),
         required=False
+    )
+
+    # 🔐 Password fields
+    new_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'New password (leave blank to keep current)',
+            'class': 'w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
+        })
+    )
+    confirm_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={
+            'placeholder': 'Confirm new password',
+            'class': 'w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
+        })
     )
 
     class Meta:
@@ -98,16 +149,36 @@ class ClientProfileUpdateForm(TailwindFormMixin, forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-primary-300 rounded-xl focus:ring-2 focus:ring-primary-400 focus:outline-none transition shadow-sm'
             }),
         }
-        
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.preferred_workout_days:
             raw = self.instance.preferred_workout_days
             cleaned = [d.strip() for d in raw.split(',') if d.strip()]
-            print("Parsed days:", cleaned)
-
-            # Set initial at both field and form level
             self.fields['preferred_workout_days'].initial = cleaned
             self.initial['preferred_workout_days'] = cleaned
 
+    def clean(self):
+        cleaned = super().clean()
+        pw1 = cleaned.get('new_password')
+        pw2 = cleaned.get('confirm_password')
+        if pw1 or pw2:
+            if pw1 != pw2:
+                raise forms.ValidationError("Passwords do not match.")
+            if len(pw1) < 6:
+                raise forms.ValidationError("Password must be at least 6 characters.")
+        return cleaned
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+
+        # Update password if provided
+        pw = self.cleaned_data.get('new_password')
+        if pw:
+            user = profile.user
+            user.password = make_password(pw)
+            user.save()
+
+        if commit:
+            profile.save()
+        return profile

@@ -1,68 +1,120 @@
 {% extends 'detail_base.html' %}
 
-{% block detail_title %}{{ workout_plan.title }}{% endblock %}
-{% block detail_subtitle %}Client: {{ workout_plan.client.user.get_full_name }}{% endblock %}
+{% block detail_title %}
+  <span class="inline-flex items-center gap-2 text-primary-700">
+    <i class="fas fa-dumbbell text-primary-500"></i> {{ workout_plan.title }}
+  </span>
+{% endblock %}
+
+{% block detail_subtitle %}
+  <span class="text-sm text-gray-600">Client: {{ workout_plan.client.user.get_full_name }}</span>
+{% endblock %}
+
 {% block back_url %}{% url 'workouts:list' %}{% endblock %}
-{% block detail_initials %}{{ workout_plan.client.user.first_name.0 }}{{ workout_plan.client.user.last_name.0 }}{% endblock %}
+{% block detail_initials %}
+  {{ workout_plan.client.user.first_name.0 }}{{ workout_plan.client.user.last_name.0 }}
+{% endblock %}
 
 {% block detail_sections %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- 📋 Plan Info -->
-  <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
-    <h3 class="text-xl font-semibold text-primary-900 mb-4">Plan Info</h3>
-    <div class="space-y-2 text-sm text-primary-800">
-      <p><strong>Client:</strong> {{ workout_plan.client.user.get_full_name }}</p>
-      <p><strong>Difficulty:</strong> {{ workout_plan.get_difficulty_display }}</p>
-      <p><strong>Duration:</strong> {{ workout_plan.duration_weeks }} weeks</p>
-      <p><strong>Description:</strong> {% if workout_plan.description %}{{ workout_plan.description }}{% else %}—{% endif %}</p>
+  <!-- 📋 Plan Overview -->
+  <section class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-4">Plan Overview</h3>
+    <dl class="space-y-3 text-sm text-gray-700">
+      <div>
+        <dt class="font-medium text-gray-500">Client</dt>
+        <dd>{{ workout_plan.client.user.get_full_name }}</dd>
+      </div>
+      <div>
+        <dt class="font-medium text-gray-500">Difficulty</dt>
+        <dd>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+            <i class="fas fa-bolt"></i> {{ workout_plan.get_difficulty_display }}
+          </span>
+        </dd>
+      </div>
+      <div>
+        <dt class="font-medium text-gray-500">Duration</dt>
+        <dd>{{ workout_plan.duration_weeks }} weeks</dd>
+      </div>
+      <div>
+        <dt class="font-medium text-gray-500">Description</dt>
+        <dd>{% if workout_plan.description %}{{ workout_plan.description }}{% else %}<span class="text-gray-400 italic">—</span>{% endif %}</dd>
+      </div>
       {% if workout_plan.ai_enhanced %}
-        <p><strong>AI Suggestions:</strong> {% if workout_plan.ai_suggestions %}{{ workout_plan.ai_suggestions }}{% else %}—{% endif %}</p>
+      <div>
+        <dt class="font-medium text-gray-500">AI Suggestions</dt>
+        <dd>{% if workout_plan.ai_suggestions %}{{ workout_plan.ai_suggestions }}{% else %}<span class="text-gray-400 italic">—</span>{% endif %}</dd>
+      </div>
       {% endif %}
-    </div>
+    </dl>
 
-    <!-- Action Buttons -->
-    <div class="mt-5 flex flex-wrap gap-2">
-      <a href="{% url 'workouts:edit' workout_plan.pk %}" class="btn-icon bg-warning-500 text-white">
-        <i class="fas fa-edit mr-1"></i> Edit
+    <!-- Actions -->
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a href="{% url 'workouts:edit' workout_plan.pk %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-500 text-white shadow hover:bg-yellow-600 transition">
+        <i class="fas fa-edit"></i> Edit
       </a>
-      <a href="{% url 'workouts:delete' workout_plan.pk %}" class="btn-icon bg-red-500 text-white">
-        <i class="fas fa-trash-alt mr-1"></i> Delete
+      <a href="{% url 'workouts:delete' workout_plan.pk %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500 text-white shadow hover:bg-red-600 transition">
+        <i class="fas fa-trash-alt"></i> Delete
       </a>
     </div>
-  </div>
+  </section>
 
   <!-- 🏋️ Workout Structure -->
- <!-- 🏋️ Workout Structure -->
-<div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition mt-6">
-  <h3 class="text-xl font-semibold text-primary-900 mb-4">Workout Structure</h3>
+  <section class="lg:col-span-2 bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition">
+    <h3 class="text-xl font-semibold text-primary-900 mb-4">Workout Structure</h3>
 
-  {% if workout_structure %}
-    <div class="space-y-6">
-      {% for day_block in workout_structure %}
-        <div class="bg-primary-50 p-4 rounded-xl">
-          <h4 class="text-lg font-semibold text-primary-700 mb-2">{{ day_block.day }}</h4>
+    {% if workout_structure %}
+      <div class="space-y-6">
+        {% for day_block in workout_structure %}
+          <div class="bg-primary-50 rounded-xl p-4 ring-1 ring-primary-100">
+            <h4 class="text-lg font-semibold text-primary-700 mb-3 flex items-center gap-2">
+              <i class="fas fa-calendar-day text-primary-400"></i> {{ day_block.day }}
+            </h4>
 
-          {% if day_block.exercises %}
-            <ul class="space-y-2 text-sm text-primary-800">
-              {% for exercise in day_block.exercises %}
-                <li class="bg-white border border-primary-100 rounded-lg p-3 shadow-sm hover:shadow-md transition">
-                  <div class="flex justify-between items-center">
-                    <span class="font-medium">{{ exercise.name }}</span>
-                    <span class="text-xs text-gray-500">Sets: {{ exercise.sets }} | Reps: {{ exercise.reps }}</span>
-                  </div>
-                </li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="text-primary-400 italic text-sm">No exercises listed for this day.</p>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="text-primary-400 text-sm">No workout structure defined yet.</p>
-  {% endif %}
-</div>
+            {% if day_block.exercises %}
+              <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for exercise in day_block.exercises %}
+                  <li class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="font-semibold text-gray-800">{{ exercise.name }}</span>
+                      <span class="text-xs text-gray-500">Sets: {{ exercise.sets }} · Reps: {{ exercise.reps }}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+                      {% if exercise.video_url %}
+                        <a href="{{ exercise.video_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition">
+                          <i class="fas fa-play-circle"></i> Demo
+                        </a>
+                      {% endif %}
+                      {% if exercise.equipment %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                          <i class="fas fa-toolbox"></i> {{ exercise.equipment|title }}
+                        </span>
+                      {% endif %}
+                      {% if exercise.difficulty %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                          <i class="fas fa-bolt"></i> {{ exercise.difficulty|title }}
+                        </span>
+                      {% endif %}
+                      {% if exercise.done %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800">
+                          <i class="fas fa-check-circle"></i> Done
+                        </span>
+                      {% endif %}
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-primary-400 italic text-sm">No exercises listed for this day.</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-primary-400 text-sm">No workout structure defined yet.</p>
+    {% endif %}
+  </section>
 </div>
 {% endblock %}
