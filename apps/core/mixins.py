@@ -11,7 +11,7 @@ from django.contrib import messages
 class RoleRequiredMixin(UserPassesTestMixin):
     """Mixin to require specific user roles"""
     required_role = None
-    
+
     def test_func(self):
         if not self.required_role:
             return True
@@ -31,7 +31,7 @@ class AdminRequiredMixin(RoleRequiredMixin):
 
 class TrainerOwnedMixin:
     """Mixin to ensure objects belong to the current trainer"""
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         if hasattr(self.request.user, 'trainer_profile'):
@@ -41,26 +41,26 @@ class TrainerOwnedMixin:
 class PackageLimitMixin:
     """Mixin to enforce package limits"""
     limit_type = None  # 'max_clients', 'ai_features', 'custom_branding'
-    
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.user.is_trainer:
             trainer_profile = get_object_or_404(TrainerProfile, user=request.user)
             package_limits = settings.PACKAGE_LIMITS.get(trainer_profile.package, {})
-            
+
             if self.limit_type == 'max_clients':
                 current_clients = trainer_profile.clients.count()
                 max_clients = package_limits.get('max_clients', 0)
                 if current_clients >= max_clients:
                     raise PermissionDenied("You have reached your client limit. Please upgrade your package.")
-            
+
             elif self.limit_type == 'ai_features':
                 if not package_limits.get('ai_features', False):
                     raise PermissionDenied("AI features are not available in your current package.")
-            
+
             elif self.limit_type == 'custom_branding':
                 if not package_limits.get('custom_branding', False):
                     raise PermissionDenied("Custom branding is not available in your current package.")
-        
+
         return super().dispatch(request, *args, **kwargs)
 
 class SubscriptionRequiredMixin:
@@ -85,17 +85,17 @@ class SubscriptionRequiredMixin:
             return redirect(reverse_lazy("accounts:pending_payment"))
 
         return super().dispatch(request, *args, **kwargs)
-    
+
 class ClientOwnedMixin:
     """Mixin to ensure objects belong to the current client"""
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         if hasattr(self.request.user, 'client_profile'):
             return queryset.filter(client=self.request.user.client_profile)
         return queryset.none()
-    
-    
+
+
 # apps/core/forms.py
 from django import forms
 
@@ -112,7 +112,7 @@ class TailwindFormMixin:
         "w-full px-3 py-2 border border-gray-300 rounded-md "
         "focus:outline-none focus:ring-2 focus:ring-blue-500"
     )
-    
+
     default_select_class = (
     "w-[3rem] px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 "
     "focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none")
@@ -142,5 +142,59 @@ class TailwindFormMixin:
 
             else:
                 widget.attrs.setdefault("class", self.default_input_class)
+
+
+
+from datetime import timedelta, date, time
+from random import choice
+from django.utils import timezone
+
+from apps.accounts.models import User
+from apps.clients.models import ClientProfile
+from apps.schedules.models import WorkoutSchedule, WorkoutSession
+
+# ── Setup ──
+trainer_user = User.objects.get(username="trainerhaydi")
+trainer = trainer_user.trainer_profile
+
+clients = ClientProfile.objects.filter(trainer=trainer, workout_plans__isnull=False).distinct()
+
+# Possible start times
+time_slots = [time(7, 0), time(9, 0), time(11, 0), time(15, 0), time(18, 0)]
+
+# Generate schedules for August + September
+start_date = date(2025, 8, 1)
+end_date = date(2025, 9, 30)
+
+for client in clients:
+    plan = client.workout_plans.first()
+    if not plan:
+        continue
+
+    # ── Create schedule ──
+    schedule = WorkoutSchedule.objects.create(
+        client=client,
+        trainer=trainer,
+        workout_plan=plan,
+        weekly_sessions=client.weekly_sessions or 3,
+        trainer_approve_required=True,
+        start_date=start_date,
+        end_date=end_date,
+        default_start_time=choice(time_slots),
+        default_duration=timedelta(hours=1),
+        notes="Generated for August + September."
+    )
+    now = timezone.now()
+    today = now.date()
+
+    # ── Generate sessions ──
+    schedule.generate_sessions()
+    for session in schedule.sessions.filter(date__gte=today).order_by("date")[:2]:
+        session.trainer_approved = True
+        session.notes = "Approved for demo."
+        session.save()
+
+
+print("✅ All workout schedules and sessions created for August + September.")
 
 
