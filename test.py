@@ -6,10 +6,10 @@ from apps.clients.models import ClientProfile
 
 # ─── Trainer User ─────────────────────────────────────────────────────────────
 trainer_user = User.objects.create(
-    username="trainerlayke",
-    first_name="Layke",
-    last_name="Mariam",
-    email="layke.mariam@gmail.com",
+    username="trainermurtuza",
+    first_name="Murtuza",
+    last_name="Mohsin",
+    email="murtuzamohsin@gmail.com",
     role="trainer",
     phone_number="0911001100",
     date_of_birth="1989-04-12",
@@ -23,16 +23,16 @@ trainer_user = User.objects.create(
 
 trainer_profile = TrainerProfile.objects.create(
     user=trainer_user,
-    business_name="Layke Mariam Fitness",
-    bio="Ethiopian coach blending flexibility, strength, and fasting-aware programs.",
+    business_name="Murtuza Mohsin",
+    bio="6x National chamtion and many more itles",
     specializations="flexibility",
     experience_years=8,
-    certifications="ACE CPT; Ethiopian Sports Council Accreditation",
+    certifications="Certified Trtransformation specialist.",
     is_paid=True,
     package="basic",
     brand_color="#3B82F6",
-    address="Bole, Addis Ababa, Ethiopia",
-    city="Addis Ababa",
+    address="",
+    city="",
     website="https://fithabesha.et",
     instagram="fithabesha",
     hourly_rate=450.00,
@@ -41,17 +41,17 @@ trainer_profile = TrainerProfile.objects.create(
 )
 
 # ─── Ethiopian Client Profiles ────────────────────────────────────────────────
-ethiopian_clients = [
-    {"username": "liyae@12", "name": "Liya Fikremariam", "goal": "weight_loss", "level": "beginner", "height": 162, "weight": 76, "target": 64, "days": "Mon, Wed, Fri"},
-    {"username": "nahi@12", "name": "Nahom Worku", "goal": "muscle_gain", "level": "intermediate", "height": 181, "weight": 73, "target": 82, "days": "Tue, Thu, Sat"},
-    {"username": "rediet@12", "name": "Rediet Hailu", "goal": "flexibility", "level": "beginner", "height": 158, "weight": 55, "target": 53, "days": "Mon, Thu"},
-    {"username": "biruk@12", "name": "Biruk Tsegaye", "goal": "general_fitness", "level": "intermediate", "height": 174, "weight": 69, "target": 67, "days": "Wed, Fri, Sun"},
-    {"username": "marth@18", "name": "Martha Kebede", "goal": "strength", "level": "advanced", "height": 170, "weight": 64, "target": 68, "days": "Mon, Tue, Thu, Sat"},
+global_clients = [
+    {"username": "evans", "name": "Liya Evans", "goal": "weight_loss", "level": "beginner", "height": 162, "weight": 76, "target": 64, "days": "Mon, Wed, Fri"},
+    {"username": "nathan", "name": "Nathaniel Kim", "goal": "muscle_gain", "level": "intermediate", "height": 181, "weight": 73, "target": 82, "days": "Tue, Thu, Sat"},
+    {"username": "riely", "name": "Riley Chen", "goal": "flexibility", "level": "beginner", "height": 158, "weight": 55, "target": 53, "days": "Mon, Thu"},
+    {"username": "bruno", "name": "Bruno Silva", "goal": "general_fitness", "level": "intermediate", "height": 174, "weight": 69, "target": 67, "days": "Wed, Fri, Sun"},
+    {"username": "maria", "name": "Maria González", "goal": "strength", "level": "advanced", "height": 170, "weight": 64, "target": 68, "days": "Mon, Tue, Thu, Sat"},
 ]
 
 
 
-for i, client in enumerate(ethiopian_clients, start=1):
+for i, client in enumerate(global_clients, start=1):
     first, last = client["name"].split()
     user = User.objects.create(
         username=client["username"],
@@ -98,7 +98,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.trainers.models import TrainerProfile
 from apps.clients.models import ClientProfile
-from apps.workouts.models import WorkoutPlan
+from apps.workouts.models import ExerciseProgress, WorkoutPlan
 
 # Sample workout structure
 # structure = [
@@ -145,7 +145,7 @@ from apps.clients.models import ClientProfile
 from apps.workouts.models import WorkoutPlan
 from apps.workouts.models import Exercise
 
-trainer_user = User.objects.get(username="trainerlayke")
+trainer_user = User.objects.get(username="trainermurtuza")
 trainer_profile = trainer_user.trainer_profile
 clients = ClientProfile.objects.filter(trainer=trainer_profile)# sample 2 clients
 
@@ -258,7 +258,7 @@ goal_to_title = {
 }
 
 # Get trainer and clients
-trainer_user = User.objects.get(username="trainerlayke")
+trainer_user = User.objects.get(username="trainermurtuza")
 trainer_profile = trainer_user.trainer_profile
 clients = ClientProfile.objects.filter(trainer=trainer_profile)
 
@@ -290,46 +290,210 @@ for client in clients:
         updated_at=timezone.now()
     )
 
-print("✅ Meal plans created for all clients under trainerlayke.")
+print("✅ Meal plans created for all clients under trainermurtuza.")
 
 
 from django.utils import timezone
 from apps.trainers.models import TrainerProfile
 from apps.nutrition.models import TrainerFood
 
-trainer = TrainerProfile.objects.get(user__username="trainerlayke")
+trainer = TrainerProfile.objects.get(user__username="trainermurtuza")
 
+# foods = [
+#     # Grains & Cereals
+#     {
+#         "name": "Injera",
+#         "category": "grains",
+#         "calories_per_100g": 126,
+#         "protein_per_100g": 4.0,
+#         "carbs_per_100g": 25.0,
+#         "fat_per_100g": 0.5,
+#         "fiber_per_100g": 3.0,
+#         "description": "Teff-based fermented flatbread, staple in Ethiopian meals.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Central to Ethiopian cuisine and communal eating.",
+#         "preparation_notes": "Fermented teff batter cooked on mitad.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     },
+#     {
+#         "name": "Kinche",
+#         "category": "grains",
+#         "calories_per_100g": 150,
+#         "protein_per_100g": 5.0,
+#         "carbs_per_100g": 28.0,
+#         "fat_per_100g": 2.0,
+#         "fiber_per_100g": 3.0,
+#         "description": "Cracked barley or oats boiled with spices.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Common breakfast dish.",
+#         "preparation_notes": "Boiled with water, salt, sometimes oil or flax.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": False,
+#         "is_fasting_friendly": True
+#     },
+
+#     # Legumes
+#     {
+#         "name": "Shiro Wot",
+#         "category": "legumes",
+#         "calories_per_100g": 180,
+#         "protein_per_100g": 8.0,
+#         "carbs_per_100g": 20.0,
+#         "fat_per_100g": 6.0,
+#         "fiber_per_100g": 5.0,
+#         "description": "Chickpea flour stew with spices.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Fasting staple, high in protein.",
+#         "preparation_notes": "Simmered with onions, garlic, berbere.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     },
+#     {
+#         "name": "Misir Wot",
+#         "category": "legumes",
+#         "calories_per_100g": 163,
+#         "protein_per_100g": 9.0,
+#         "carbs_per_100g": 20.0,
+#         "fat_per_100g": 5.0,
+#         "fiber_per_100g": 6.0,
+#         "description": "Red lentil stew with berbere spice.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Fasting-friendly and protein-rich.",
+#         "preparation_notes": "Cooked with onions, garlic, and oil.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     },
+
+#     # Vegetables
+#     {
+#         "name": "Gomen",
+#         "category": "vegetables",
+#         "calories_per_100g": 50,
+#         "protein_per_100g": 3.0,
+#         "carbs_per_100g": 7.0,
+#         "fat_per_100g": 1.0,
+#         "fiber_per_100g": 4.0,
+#         "description": "Stewed collard greens with garlic and oil.",
+#         "seasonal_availability": "Rainy season peak",
+#         "cultural_significance": "Served with injera, especially on fasting days.",
+#         "preparation_notes": "Sautéed with onions, garlic, and oil.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     },
+#     {
+#         "name": "Atkilt",
+#         "category": "vegetables",
+#         "calories_per_100g": 60,
+#         "protein_per_100g": 2.0,
+#         "carbs_per_100g": 12.0,
+#         "fat_per_100g": 1.0,
+#         "fiber_per_100g": 3.0,
+#         "description": "Cabbage, carrot, and potato mix.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Common side dish, especially during fasting.",
+#         "preparation_notes": "Steamed or sautéed with turmeric and garlic.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     },
+
+#     # Protein (non-fasting)
+#     {
+#         "name": "Doro Wot",
+#         "category": "meat",
+#         "calories_per_100g": 164,
+#         "protein_per_100g": 20.0,
+#         "carbs_per_100g": 5.0,
+#         "fat_per_100g": 8.0,
+#         "fiber_per_100g": 1.0,
+#         "description": "Spicy chicken stew with berbere and boiled eggs.",
+#         "seasonal_availability": "Holiday dish",
+#         "cultural_significance": "Served on holidays and special occasions.",
+#         "preparation_notes": "Slow-cooked with onions, garlic, berbere.",
+#         "is_vegetarian": False,
+#         "is_vegan": False,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": False
+#     },
+#     {
+#         "name": "Tibs",
+#         "category": "meat",
+#         "calories_per_100g": 154,
+#         "protein_per_100g": 22.0,
+#         "carbs_per_100g": 2.0,
+#         "fat_per_100g": 7.0,
+#         "fiber_per_100g": 0.5,
+#         "description": "Pan-fried beef or lamb cubes with spices.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Popular in restaurants and home meals.",
+#         "preparation_notes": "Cooked with onions, garlic, rosemary.",
+#         "is_vegetarian": False,
+#         "is_vegan": False,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": False
+#     },
+
+#     # Beverages
+#     {
+#         "name": "Telba",
+#         "category": "beverages",
+#         "calories_per_100g": 80,
+#         "protein_per_100g": 3.0,
+#         "carbs_per_100g": 5.0,
+#         "fat_per_100g": 6.0,
+#         "fiber_per_100g": 2.0,
+#         "description": "Flaxseed drink, often consumed during fasting.",
+#         "seasonal_availability": "Year-round",
+#         "cultural_significance": "Traditional fasting beverage.",
+#         "preparation_notes": "Ground flax mixed with water and spices.",
+#         "is_vegetarian": True,
+#         "is_vegan": True,
+#         "is_gluten_free": True,
+#         "is_fasting_friendly": True
+#     }
+# ]
 foods = [
     # Grains & Cereals
     {
-        "name": "Injera",
+        "name": "Rice",
         "category": "grains",
-        "calories_per_100g": 126,
-        "protein_per_100g": 4.0,
-        "carbs_per_100g": 25.0,
-        "fat_per_100g": 0.5,
-        "fiber_per_100g": 3.0,
-        "description": "Teff-based fermented flatbread, staple in Ethiopian meals.",
+        "calories_per_100g": 130,
+        "protein_per_100g": 2.7,
+        "carbs_per_100g": 28.0,
+        "fat_per_100g": 0.3,
+        "fiber_per_100g": 0.4,
+        "description": "Staple grain eaten worldwide, especially in Asia and Latin America.",
         "seasonal_availability": "Year-round",
-        "cultural_significance": "Central to Ethiopian cuisine and communal eating.",
-        "preparation_notes": "Fermented teff batter cooked on mitad.",
+        "cultural_significance": "Main carbohydrate source for billions globally.",
+        "preparation_notes": "Boiled, steamed, or stir-fried.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
         "is_fasting_friendly": True
     },
     {
-        "name": "Kinche",
+        "name": "Oats",
         "category": "grains",
-        "calories_per_100g": 150,
-        "protein_per_100g": 5.0,
-        "carbs_per_100g": 28.0,
-        "fat_per_100g": 2.0,
-        "fiber_per_100g": 3.0,
-        "description": "Cracked barley or oats boiled with spices.",
+        "calories_per_100g": 389,
+        "protein_per_100g": 16.9,
+        "carbs_per_100g": 66.3,
+        "fat_per_100g": 6.9,
+        "fiber_per_100g": 10.6,
+        "description": "Whole grain used in porridge and cereals.",
         "seasonal_availability": "Year-round",
-        "cultural_significance": "Common breakfast dish.",
-        "preparation_notes": "Boiled with water, salt, sometimes oil or flax.",
+        "cultural_significance": "Popular breakfast choice in the West.",
+        "preparation_notes": "Cooked with water or milk, often with toppings.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": False,
@@ -338,34 +502,34 @@ foods = [
 
     # Legumes
     {
-        "name": "Shiro Wot",
+        "name": "Chickpeas",
         "category": "legumes",
-        "calories_per_100g": 180,
-        "protein_per_100g": 8.0,
-        "carbs_per_100g": 20.0,
-        "fat_per_100g": 6.0,
-        "fiber_per_100g": 5.0,
-        "description": "Chickpea flour stew with spices.",
+        "calories_per_100g": 164,
+        "protein_per_100g": 9.0,
+        "carbs_per_100g": 27.0,
+        "fat_per_100g": 2.6,
+        "fiber_per_100g": 7.6,
+        "description": "Legume widely used in Middle Eastern, Indian, and Mediterranean cuisines.",
         "seasonal_availability": "Year-round",
-        "cultural_significance": "Fasting staple, high in protein.",
-        "preparation_notes": "Simmered with onions, garlic, berbere.",
+        "cultural_significance": "Key ingredient in hummus and falafel.",
+        "preparation_notes": "Boiled, mashed, or ground into flour.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
         "is_fasting_friendly": True
     },
     {
-        "name": "Misir Wot",
+        "name": "Black Beans",
         "category": "legumes",
-        "calories_per_100g": 163,
-        "protein_per_100g": 9.0,
-        "carbs_per_100g": 20.0,
-        "fat_per_100g": 5.0,
-        "fiber_per_100g": 6.0,
-        "description": "Red lentil stew with berbere spice.",
+        "calories_per_100g": 132,
+        "protein_per_100g": 8.9,
+        "carbs_per_100g": 23.7,
+        "fat_per_100g": 0.5,
+        "fiber_per_100g": 8.7,
+        "description": "Popular in Latin American cuisine, rich in protein and fiber.",
         "seasonal_availability": "Year-round",
-        "cultural_significance": "Fasting-friendly and protein-rich.",
-        "preparation_notes": "Cooked with onions, garlic, and oil.",
+        "cultural_significance": "Staple in Mexican and Caribbean dishes.",
+        "preparation_notes": "Soaked and cooked, used in soups, stews, burritos.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
@@ -374,70 +538,70 @@ foods = [
 
     # Vegetables
     {
-        "name": "Gomen",
+        "name": "Spinach",
         "category": "vegetables",
-        "calories_per_100g": 50,
-        "protein_per_100g": 3.0,
-        "carbs_per_100g": 7.0,
-        "fat_per_100g": 1.0,
-        "fiber_per_100g": 4.0,
-        "description": "Stewed collard greens with garlic and oil.",
-        "seasonal_availability": "Rainy season peak",
-        "cultural_significance": "Served with injera, especially on fasting days.",
-        "preparation_notes": "Sautéed with onions, garlic, and oil.",
+        "calories_per_100g": 23,
+        "protein_per_100g": 2.9,
+        "carbs_per_100g": 3.6,
+        "fat_per_100g": 0.4,
+        "fiber_per_100g": 2.2,
+        "description": "Leafy green vegetable packed with iron and vitamins.",
+        "seasonal_availability": "Year-round (best in spring/fall)",
+        "cultural_significance": "Used worldwide in salads, soups, and sautés.",
+        "preparation_notes": "Can be eaten raw, steamed, or stir-fried.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
         "is_fasting_friendly": True
     },
     {
-        "name": "Atkilt",
+        "name": "Broccoli",
         "category": "vegetables",
-        "calories_per_100g": 60,
-        "protein_per_100g": 2.0,
-        "carbs_per_100g": 12.0,
-        "fat_per_100g": 1.0,
-        "fiber_per_100g": 3.0,
-        "description": "Cabbage, carrot, and potato mix.",
-        "seasonal_availability": "Year-round",
-        "cultural_significance": "Common side dish, especially during fasting.",
-        "preparation_notes": "Steamed or sautéed with turmeric and garlic.",
+        "calories_per_100g": 55,
+        "protein_per_100g": 3.7,
+        "carbs_per_100g": 11.0,
+        "fat_per_100g": 0.6,
+        "fiber_per_100g": 3.8,
+        "description": "Nutrient-rich vegetable, high in vitamin C and fiber.",
+        "seasonal_availability": "Year-round (peak in winter)",
+        "cultural_significance": "Common in Western and Asian cuisines.",
+        "preparation_notes": "Steamed, roasted, or stir-fried.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
         "is_fasting_friendly": True
     },
 
-    # Protein (non-fasting)
+    # Proteins
     {
-        "name": "Doro Wot",
+        "name": "Chicken Breast",
         "category": "meat",
-        "calories_per_100g": 164,
-        "protein_per_100g": 20.0,
-        "carbs_per_100g": 5.0,
-        "fat_per_100g": 8.0,
-        "fiber_per_100g": 1.0,
-        "description": "Spicy chicken stew with berbere and boiled eggs.",
-        "seasonal_availability": "Holiday dish",
-        "cultural_significance": "Served on holidays and special occasions.",
-        "preparation_notes": "Slow-cooked with onions, garlic, berbere.",
+        "calories_per_100g": 165,
+        "protein_per_100g": 31.0,
+        "carbs_per_100g": 0.0,
+        "fat_per_100g": 3.6,
+        "fiber_per_100g": 0.0,
+        "description": "Lean protein source, widely consumed worldwide.",
+        "seasonal_availability": "Year-round",
+        "cultural_significance": "Main protein in many diets (Western, Asian, African).",
+        "preparation_notes": "Grilled, baked, or stir-fried.",
         "is_vegetarian": False,
         "is_vegan": False,
         "is_gluten_free": True,
         "is_fasting_friendly": False
     },
     {
-        "name": "Tibs",
-        "category": "meat",
-        "calories_per_100g": 154,
-        "protein_per_100g": 22.0,
-        "carbs_per_100g": 2.0,
-        "fat_per_100g": 7.0,
-        "fiber_per_100g": 0.5,
-        "description": "Pan-fried beef or lamb cubes with spices.",
-        "seasonal_availability": "Year-round",
-        "cultural_significance": "Popular in restaurants and home meals.",
-        "preparation_notes": "Cooked with onions, garlic, rosemary.",
+        "name": "Salmon",
+        "category": "fish",
+        "calories_per_100g": 208,
+        "protein_per_100g": 20.0,
+        "carbs_per_100g": 0.0,
+        "fat_per_100g": 13.0,
+        "fiber_per_100g": 0.0,
+        "description": "Fatty fish rich in omega-3 fatty acids.",
+        "seasonal_availability": "Year-round (wild peak in summer)",
+        "cultural_significance": "Popular in sushi, grilled dishes, and health diets.",
+        "preparation_notes": "Grilled, baked, or raw in sushi.",
         "is_vegetarian": False,
         "is_vegan": False,
         "is_gluten_free": True,
@@ -446,17 +610,34 @@ foods = [
 
     # Beverages
     {
-        "name": "Telba",
+        "name": "Green Tea",
         "category": "beverages",
-        "calories_per_100g": 80,
-        "protein_per_100g": 3.0,
-        "carbs_per_100g": 5.0,
-        "fat_per_100g": 6.0,
-        "fiber_per_100g": 2.0,
-        "description": "Flaxseed drink, often consumed during fasting.",
+        "calories_per_100g": 1,
+        "protein_per_100g": 0.0,
+        "carbs_per_100g": 0.0,
+        "fat_per_100g": 0.0,
+        "fiber_per_100g": 0.0,
+        "description": "Light tea rich in antioxidants, popular in Asia and globally.",
         "seasonal_availability": "Year-round",
-        "cultural_significance": "Traditional fasting beverage.",
-        "preparation_notes": "Ground flax mixed with water and spices.",
+        "cultural_significance": "Daily drink in China, Japan, and worldwide wellness culture.",
+        "preparation_notes": "Steeped in hot water, no sugar traditionally.",
+        "is_vegetarian": True,
+        "is_vegan": True,
+        "is_gluten_free": True,
+        "is_fasting_friendly": True
+    },
+    {
+        "name": "Coffee",
+        "category": "beverages",
+        "calories_per_100g": 2,
+        "protein_per_100g": 0.1,
+        "carbs_per_100g": 0.0,
+        "fat_per_100g": 0.0,
+        "fiber_per_100g": 0.0,
+        "description": "Global beverage brewed from roasted coffee beans.",
+        "seasonal_availability": "Year-round",
+        "cultural_significance": "Daily drink in almost every culture worldwide.",
+        "preparation_notes": "Brewed hot or cold, with or without milk/sugar.",
         "is_vegetarian": True,
         "is_vegan": True,
         "is_gluten_free": True,
@@ -464,10 +645,12 @@ foods = [
     }
 ]
 
+
 for f in foods:
     TrainerFood.objects.get_or_create(trainer=trainer, name=f["name"], defaults={**f, "created_at": timezone.now()})
 
-print("✅ Ethiopian TrainerFood entries seeded for trainerlayke.")
+# print("✅ Ethiopian TrainerFood entries seeded for trainermurtuza.")
+print("✅ WorldWide TrainerFood entries seeded for trainermurtuza.")
 
 
 
@@ -486,7 +669,7 @@ from apps.payments.models import Payment, Subscription
 now = timezone.now()
 today = now.date()
 
-trainer_user = User.objects.get(username="trainerlayke")
+trainer_user = User.objects.get(username="trainermurtuza")
 trainer = trainer_user.trainer_profile
 clients = ClientProfile.objects.filter(trainer=trainer)
 
@@ -617,7 +800,7 @@ from apps.progress.models import ClientProgress
 
 now = timezone.now()
 today = now.date()
-trainer = TrainerProfile.objects.get(user__username="trainerlayke")
+trainer = TrainerProfile.objects.get(user__username="trainermurtuza")
 clients = ClientProfile.objects.filter(trainer=trainer)
 
 # Helper ranges
@@ -757,52 +940,104 @@ FASTING_DAYS = {"Wednesday", "Friday"}  # customize as needed
 
 # Portion helper (approximate, easy to visualize)
 # qty is approximate cooked weights or household measures
+# def non_fasting_day():
+#     return {
+#         "Breakfast": [
+#             {"name": "Kinche (cracked barley/oats) + flaxseed", "qty": "1 bowl (300g)"},
+#             {"name": "Boiled eggs", "qty": "2 pcs"},
+#             {"name": "Coffee or tea (unsweetened or light sugar)", "qty": "1 cup"}
+#         ],
+#         "Lunch": [
+#             {"name": "Injera", "qty": "2 rolls (~160g)"},
+#             {"name": "Doro Wot (chicken stew)", "qty": "150g"},
+#             {"name": "Gomen (collard greens)", "qty": "1 cup"},
+#             {"name": "Salad (tomato/onion/lettuce)", "qty": "1 cup"}
+#         ],
+#         "Dinner": [
+#             {"name": "Tibs (lean beef) or grilled fish", "qty": "150g"},
+#             {"name": "Injera or cooked rice", "qty": "1 roll or 1 cup"},
+#             {"name": "Atkilt (cabbage/carrot/potato mix)", "qty": "1 cup"}
+#         ],
+#         "Snacks": [
+#             {"name": "Telba (flaxseed drink) or plain yogurt", "qty": "1 cup"},
+#             {"name": "Fruit (banana/orange)", "qty": "1 pc"}
+#         ]
+#     }
+
+# def fasting_day():
+#     return {
+#         "Breakfast": [
+#             {"name": "Genfo (barley porridge) with shiro drizzle", "qty": "1 bowl (300g)"},
+#             {"name": "Black coffee/tea", "qty": "1 cup"}
+#         ],
+#         "Lunch": [
+#             {"name": "Injera", "qty": "2 rolls (~160g)"},
+#             {"name": "Shiro Wot (chickpea stew)", "qty": "1 cup"},
+#             {"name": "Gomen (collard greens)", "qty": "1 cup"},
+#             {"name": "Timatim salad", "qty": "1 cup"}
+#         ],
+#         "Dinner": [
+#             {"name": "Misir Wot (red lentil stew)", "qty": "1 cup"},
+#             {"name": "Injera", "qty": "1–2 rolls"},
+#             {"name": "Atkilt (cabbage/carrot/potato mix)", "qty": "1 cup"}
+#         ],
+#         "Snacks": [
+#             {"name": "Roasted chickpeas (kollo) or peanuts", "qty": "30–40g"},
+#             {"name": "Fruit (papaya or mango slice)", "qty": "1 serving"}
+#         ]
+#     }
+
+
+#Worldwide fastin_day and non_fasting day
+
 def non_fasting_day():
     return {
         "Breakfast": [
-            {"name": "Kinche (cracked barley/oats) + flaxseed", "qty": "1 bowl (300g)"},
-            {"name": "Boiled eggs", "qty": "2 pcs"},
+            {"name": "Oatmeal with chia seeds & berries", "qty": "1 bowl (300g)"},
+            {"name": "Boiled or scrambled eggs", "qty": "2 pcs"},
             {"name": "Coffee or tea (unsweetened or light sugar)", "qty": "1 cup"}
         ],
         "Lunch": [
-            {"name": "Injera", "qty": "2 rolls (~160g)"},
-            {"name": "Doro Wot (chicken stew)", "qty": "150g"},
-            {"name": "Gomen (collard greens)", "qty": "1 cup"},
-            {"name": "Salad (tomato/onion/lettuce)", "qty": "1 cup"}
+            {"name": "Whole-grain bread or rice", "qty": "2 slices or 1 cup"},
+            {"name": "Grilled chicken breast", "qty": "150g"},
+            {"name": "Steamed spinach or broccoli", "qty": "1 cup"},
+            {"name": "Mixed salad (tomato/cucumber/lettuce)", "qty": "1 cup"}
         ],
         "Dinner": [
-            {"name": "Tibs (lean beef) or grilled fish", "qty": "150g"},
-            {"name": "Injera or cooked rice", "qty": "1 roll or 1 cup"},
-            {"name": "Atkilt (cabbage/carrot/potato mix)", "qty": "1 cup"}
+            {"name": "Grilled salmon, chicken, or lean beef", "qty": "150g"},
+            {"name": "Brown rice, quinoa, or sweet potato", "qty": "1 cup"},
+            {"name": "Roasted vegetables (zucchini, carrot, bell pepper)", "qty": "1 cup"}
         ],
         "Snacks": [
-            {"name": "Telba (flaxseed drink) or plain yogurt", "qty": "1 cup"},
-            {"name": "Fruit (banana/orange)", "qty": "1 pc"}
+            {"name": "Greek yogurt or kefir", "qty": "1 cup"},
+            {"name": "Fruit (apple, orange, or banana)", "qty": "1 pc"}
         ]
     }
+
 
 def fasting_day():
     return {
         "Breakfast": [
-            {"name": "Genfo (barley porridge) with shiro drizzle", "qty": "1 bowl (300g)"},
-            {"name": "Black coffee/tea", "qty": "1 cup"}
+            {"name": "Porridge (oats, millet, or cornmeal) with nut butter", "qty": "1 bowl (300g)"},
+            {"name": "Black coffee/tea or herbal tea", "qty": "1 cup"}
         ],
         "Lunch": [
-            {"name": "Injera", "qty": "2 rolls (~160g)"},
-            {"name": "Shiro Wot (chickpea stew)", "qty": "1 cup"},
-            {"name": "Gomen (collard greens)", "qty": "1 cup"},
-            {"name": "Timatim salad", "qty": "1 cup"}
+            {"name": "Whole-grain rice or quinoa", "qty": "1 cup"},
+            {"name": "Lentil stew or chickpea curry", "qty": "1 cup"},
+            {"name": "Steamed greens (spinach, kale, collards)", "qty": "1 cup"},
+            {"name": "Tomato & cucumber salad", "qty": "1 cup"}
         ],
         "Dinner": [
-            {"name": "Misir Wot (red lentil stew)", "qty": "1 cup"},
-            {"name": "Injera", "qty": "1–2 rolls"},
-            {"name": "Atkilt (cabbage/carrot/potato mix)", "qty": "1 cup"}
+            {"name": "Bean or lentil soup", "qty": "1 cup"},
+            {"name": "Whole-grain flatbread or rice", "qty": "1 roll or 1 cup"},
+            {"name": "Steamed mixed vegetables (broccoli, carrots, cauliflower)", "qty": "1 cup"}
         ],
         "Snacks": [
-            {"name": "Roasted chickpeas (kollo) or peanuts", "qty": "30–40g"},
-            {"name": "Fruit (papaya or mango slice)", "qty": "1 serving"}
+            {"name": "Roasted nuts or seeds (almonds, peanuts, sunflower seeds)", "qty": "30–40g"},
+            {"name": "Fruit (papaya, mango, apple, or pear)", "qty": "1 serving"}
         ]
     }
+
 
 # Adjustments for goals (simple swaps/boosts)
 def adjust_for_goal(day_plan, goal):
@@ -837,7 +1072,7 @@ def build_week(goal):
 # ---- Main update logic ------------------------------------------------------
 
 now = timezone.now()
-trainer_user = User.objects.get(username="trainerlayke")
+trainer_user = User.objects.get(username="trainermurtuza")
 trainer = trainer_user.trainer_profile
 clients = ClientProfile.objects.filter(trainer=trainer)
 
@@ -887,7 +1122,7 @@ from apps.clients.models import ClientProfile
 from apps.schedules.models import WorkoutSchedule, WorkoutSession
 
 # ── Setup ──
-trainer_user = User.objects.get(username="trainerlayke")
+trainer_user = User.objects.get(username="trainermurtuza")
 trainer = trainer_user.trainer_profile
 
 clients = ClientProfile.objects.filter(trainer=trainer, workout_plans__isnull=False).distinct()
@@ -925,7 +1160,7 @@ for client in clients:
 print("✅ All workout schedules and sessions created for August + September.")
 
 
-trainer = "trainerlayke"
+trainer = "trainermurtuza"
 trainer_profile = TrainerProfile.objects.get(user__username = trainer)
 
 workout_plans = WorkoutPlan.objects.filter(trainer=trainer_profile)

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ branding.brand_name }} - Fitness Training Platform for Ethiopia{% endblock %}
+{% block title %}{{ branding.brand_name }} - Fitness Training Platform {% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -15,12 +15,12 @@
   <div class="relative max-w-6xl mx-auto px-6 lg:px-12 py-28 text-center">
     <!-- Hero Title -->
     <h1 class="hero-fade text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
-      Empower Your <span class="text-primary-600">Fitness Journey</span>
+      Empower Your <span class="text-primary-600">Global Fitness Journey</span>
     </h1>
 
     <!-- Hero Subtitle -->
     <p class="hero-fade mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
-      The complete platform for fitness trainers in Ethiopia. Manage clients, create personalized workout and meal plans, track progress, and grow your fitness business — all in one place.
+      FitnessHub connects trainers and clients worldwide. Create personalized workout and meal plans, track progress, and grow your fitness business — from Addis Ababa to anywhere in the world.
     </p>
 
     <!-- CTA Buttons -->
@@ -43,25 +43,28 @@
     </div>
 
     <!-- Stats row -->
-    <div class="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto">
-      <div class="hero-stat flex flex-col items-center">
-        <i class="fas fa-dumbbell text-secondary-600 text-2xl mb-2"></i>
-        <p class="hero-counter text-2xl font-bold text-gray-900">50+</p>
-        <p class="text-gray-600 text-sm">Workouts Created</p>
-      </div>
-      <div class="hero-stat flex flex-col items-center">
-        <i class="fas fa-users text-secondary-600 text-2xl mb-2"></i>
-        <p class="hero-counter text-2xl font-bold text-gray-900">20+</p>
-        <p class="text-gray-600 text-sm">Clients Onboarded</p>
-      </div>
-      <div class="hero-stat flex flex-col items-center">
-        <i class="fas fa-chart-line text-secondary-600 text-2xl mb-2"></i>
-        <p class="hero-counter text-2xl font-bold text-gray-900">100%</p>
-        <p class="text-gray-600 text-sm">Trainer Growth Focus</p>
-      </div>
-    </div>
+ <div class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
+  <div class="hero-stat flex flex-col items-center">
+    <i class="fas fa-dumbbell text-secondary-600 text-2xl sm:text-2xl text-xl mb-2"></i>
+    <p class="hero-counter text-2xl sm:text-2xl text-xl font-bold text-gray-900">500+</p>
+    <p class="text-gray-600 text-sm">Custom Workouts Delivered</p>
+  </div>
+  <div class="hero-stat flex flex-col items-center">
+    <i class="fas fa-users text-secondary-600 text-2xl sm:text-2xl text-xl mb-2"></i>
+    <p class="hero-counter text-2xl sm:text-2xl text-xl font-bold text-gray-900">5+ Countries</p>
+    <p class="text-gray-600 text-sm">Active Clients & Trainers</p>
+  </div>
+  <div class="hero-stat flex flex-col items-center">
+    <i class="fas fa-heartbeat text-secondary-600 text-2xl sm:text-2xl text-xl mb-2"></i>
+    <p class="hero-counter text-2xl sm:text-2xl text-xl font-bold text-gray-900">98%</p>
+    <p class="text-gray-600 text-sm">Client Satisfaction Rate</p>
+  </div>
+</div>
+
+
   </div>
 </section>
+
 <!-- Call to Action + Testimonials -->
 
 
@@ -74,65 +77,85 @@
         <i class="fas fa-star mr-1"></i> Features
       </h2>
       <p class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
-        Everything you need to succeed
+        Everything You Need to Grow Your Fitness Business
       </p>
       <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-        Built specifically for Ethiopian fitness trainers with a local food database, cultural considerations, and multi-language support.
+        FitnHub is built for trainers and clients worldwide — combining smart tools, cultural flexibility, and powerful analytics to help you succeed anywhere.
       </p>
     </div>
 
     <!-- Features Grid -->
     <div class="mt-16 grid gap-12 sm:grid-cols-2 lg:grid-cols-2">
       
-      <!-- Feature 1 -->
+      <!-- Feature Suite 1 -->
       <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
         <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
-          <i class="fas fa-users text-secondary-600"></i>
+          <i class="fas fa-users-cog text-secondary-600"></i>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Client Management</h3>
+          <h3 class="text-lg font-semibold text-gray-900">Client & Progress Management</h3>
           <p class="mt-2 text-gray-600">
-            Manage unlimited clients with detailed profiles, progress tracking, and personalized communication.
+            Keep every client’s journey organized and measurable with powerful tracking tools.
           </p>
+          <ul class="mt-3 text-gray-500 text-sm list-disc list-inside">
+            <li>Detailed client profiles</li>
+            <li>Progress tracking & analytics</li>
+            <li>Direct messaging & updates</li>
+          </ul>
         </div>
       </div>
 
-      <!-- Feature 2 -->
-      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
-        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
-          <i class="fas fa-utensils text-secondary-600"></i>
-        </div>
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900">Ethiopian Nutrition Database</h3>
-          <p class="mt-2 text-gray-600">
-            Comprehensive Ethiopian food database with nutrition info and cultural considerations.
-          </p>
-        </div>
-      </div>
-
-      <!-- Feature 3 -->
+      <!-- Feature Suite 2 -->
       <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
         <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
           <i class="fas fa-robot text-secondary-600"></i>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">AI-Powered Assistance</h3>
+          <h3 class="text-lg font-semibold text-gray-900">Smart Planning Tools</h3>
           <p class="mt-2 text-gray-600">
-            AI-enhanced plans, motivational nudges, and progress summaries to save time and engage clients better.
+            Create personalized plans faster with AI and a rich exercise database.
           </p>
+          <ul class="mt-3 text-gray-500 text-sm list-disc list-inside">
+            <li>AI-powered recommendations</li>
+            <li>Workout & meal plan creation</li>
+            <li>Extensive exercise library</li>
+          </ul>
         </div>
       </div>
 
-      <!-- Feature 4 -->
+      <!-- Feature Suite 3 -->
       <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
         <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
-          <i class="fas fa-credit-card text-secondary-600"></i>
+          <i class="fas fa-utensils text-secondary-600"></i>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Payment Management</h3>
+          <h3 class="text-lg font-semibold text-gray-900">Nutrition & Wellness</h3>
           <p class="mt-2 text-gray-600">
-            Integrated payments, subscriptions, and automated billing for your training services.
+            Support your clients’ goals with culturally aware nutrition tools.
           </p>
+          <ul class="mt-3 text-gray-500 text-sm list-disc list-inside">
+            <li>Global + local food database</li>
+            <li>Calorie & macro tracking</li>
+            <li>Cultural dietary considerations</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature Suite 4 -->
+      <div class="flex items-start gap-6 p-6 rounded-2xl shadow-md hover:shadow-xl transition bg-white">
+        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-primary-100 text-white text-xl">
+          <i class="fas fa-calendar-check text-secondary-600"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Scheduling & Payments</h3>
+          <p class="mt-2 text-gray-600">
+            Manage your time and revenue with ease.
+          </p>
+          <ul class="mt-3 text-gray-500 text-sm list-disc list-inside">
+            <li>Session scheduling & calendar views</li>
+            <li>Integrated payments & subscriptions</li>
+            <li>Automated billing & reminders</li>
+          </ul>
         </div>
       </div>
 
@@ -141,8 +164,9 @@
 </section>
 
 
+
 <!-- Pricing Section -->
- <div class="bg-gray-50 py-16">
+<div class="bg-gray-50 py-16">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center">
       <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Choose Your Plan</h2>
@@ -153,9 +177,16 @@
         <span class="text-gray-500 font-medium">Monthly</span>
         <button id="pricing-toggle" class="relative inline-flex items-center h-6 rounded-full w-12 bg-primary-500 focus:outline-none">
           <span class="sr-only">Toggle Monthly/Yearly</span>
-          <span class="transform translate-x-0 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300"></span>
+          <span id="pricing-toggle-knob" class="transform translate-x-0 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300"></span>
         </button>
         <span class="text-gray-500 font-medium">Yearly (20% off)</span>
+      </div>
+
+      <!-- Toggle Currency -->
+      <div class="mt-4 flex justify-center space-x-2">
+        <button class="currency-btn px-3 py-1 rounded bg-gray-200 text-sm font-medium" data-currency="USD">USD</button>
+        <button class="currency-btn px-3 py-1 rounded bg-gray-100 text-sm font-medium" data-currency="ETB">ETB</button>
+        <button class="currency-btn px-3 py-1 rounded bg-gray-100 text-sm font-medium" data-currency="EUR">EUR</button>
       </div>
     </div>
 
@@ -167,13 +198,10 @@
           <h3 class="text-lg font-medium text-gray-900">Basic</h3>
           <p class="mt-4 text-sm text-gray-500">Perfect for new trainers getting started</p>
           <p class="mt-8">
-            <span class="text-3xl font-extrabold text-gray-900" id="basic-price">ETB. 2,000</span>
-            <span class="text-base font-medium text-gray-500" id="basic-duration">/month</span>
+            <span class="text-3xl font-extrabold text-gray-900" id="basic-price"></span>
+            <span class="text-base font-medium text-gray-500" id="basic-duration"></span>
           </p>
-          <div class="mt-4 space-y-1">
-            <p class="text-sm text-gray-500">3 months: ETB. 5,700 <span class="text-green-600 font-semibold">(save 5%)</span></p>
-            <p class="text-sm text-gray-500">6 months: ETB. 10,800 <span class="text-green-600 font-semibold">(save 10%)</span></p>
-          </div>
+          <div class="mt-4 space-y-1 text-sm text-gray-500" id="basic-discounts"></div>
           <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-gray-800 hover:bg-gray-900 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
             Start Free Trial
           </a>
@@ -181,10 +209,10 @@
         <div class="pt-6 pb-8 px-6">
           <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">What's included</h4>
           <ul class="mt-6 space-y-4">
-            <li class="flex space-x-3"><i class="fas fa-user-friends h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 10 clients</span></li>
-            <li class="flex space-x-3"><i class="fas fa-dumbbell h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Basic workout & meal plans</span></li>
-            <li class="flex space-x-3"><i class="fas fa-chart-line h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Progress tracking</span></li>
-            <li class="flex space-x-3"><i class="fas fa-credit-card h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Payment management</span></li>
+            <li class="flex space-x-3"><i class="fas fa-user-friends text-secondary-500"></i><span class="text-sm text-gray-500">Up to 10 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-dumbbell text-secondary-500"></i><span class="text-sm text-gray-500">Basic workout & meal plans</span></li>
+            <li class="flex space-x-3"><i class="fas fa-chart-line text-secondary-500"></i><span class="text-sm text-gray-500">Progress tracking</span></li>
+            <li class="flex space-x-3"><i class="fas fa-credit-card text-secondary-500"></i><span class="text-sm text-gray-500">Payment management</span></li>
           </ul>
         </div>
       </div>
@@ -198,13 +226,10 @@
           <h3 class="text-lg font-medium text-gray-900">Pro</h3>
           <p class="mt-4 text-sm text-gray-500">For established trainers ready to scale</p>
           <p class="mt-8">
-            <span class="text-3xl font-extrabold text-primary-600" id="pro-price">ETB. 3,000</span>
-            <span class="text-base font-medium text-gray-500" id="pro-duration">/month</span>
+            <span class="text-3xl font-extrabold text-primary-600" id="pro-price"></span>
+            <span class="text-base font-medium text-gray-500" id="pro-duration"></span>
           </p>
-          <div class="mt-4 space-y-1">
-            <p class="text-sm text-gray-500">3 months: ETB. 8,550 <span class="text-green-600 font-semibold">(save 5%)</span></p>
-            <p class="text-sm text-gray-500">6 months: ETB. 16,200 <span class="text-green-600 font-semibold">(save 10%)</span></p>
-          </div>
+          <div class="mt-4 space-y-1 text-sm text-gray-500" id="pro-discounts"></div>
           <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-primary-600 hover:opacity-90 border border-primary-600 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
             Start Free Trial
           </a>
@@ -212,10 +237,10 @@
         <div class="pt-6 pb-8 px-6">
           <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">Everything in Basic, plus</h4>
           <ul class="mt-6 space-y-4">
-            <li class="flex space-x-3"><i class="fas fa-user-friends h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 50 clients</span></li>
-            <li class="flex space-x-3"><i class="fas fa-robot h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">AI-powered features</span></li>
-            <li class="flex space-x-3"><i class="fas fa-palette h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Custom branding</span></li>
-            <li class="flex space-x-3"><i class="fas fa-chart-pie h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Advanced analytics</span></li>
+            <li class="flex space-x-3"><i class="fas fa-user-friends text-secondary-500"></i><span class="text-sm text-gray-500">Up to 50 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-robot text-secondary-500"></i><span class="text-sm text-gray-500">AI-powered features</span></li>
+            <li class="flex space-x-3"><i class="fas fa-palette text-secondary-500"></i><span class="text-sm text-gray-500">Custom branding</span></li>
+            <li class="flex space-x-3"><i class="fas fa-chart-pie text-secondary-500"></i><span class="text-sm text-gray-500">Advanced analytics</span></li>
           </ul>
         </div>
       </div>
@@ -226,13 +251,10 @@
           <h3 class="text-lg font-medium text-gray-900">Enterprise</h3>
           <p class="mt-4 text-sm text-gray-500">For fitness businesses and gym chains</p>
           <p class="mt-8">
-            <span class="text-3xl font-extrabold" id="enterprise-price">ETB. 7,000</span>
-            <span class="text-base font-medium text-gray-500" id="enterprise-duration">/month</span>
+            <span class="text-3xl font-extrabold text-gray-900" id="enterprise-price"></span>
+            <span class="text-base font-medium text-gray-500" id="enterprise-duration"></span>
           </p>
-          <div class="mt-4 space-y-1">
-            <p class="text-sm text-gray-500">3 months: ETB. 19,950 <span class="text-green-600 font-semibold">(save 5%)</span></p>
-            <p class="text-sm text-gray-500">6 months: ETB. 37,800 <span class="text-green-600 font-semibold">(save 10%)</span></p>
-          </div>
+          <div class="mt-4 space-y-1 text-sm text-gray-500" id="enterprise-discounts"></div>
           <a href="{% url 'accounts:register' %}" class="mt-6 block w-full bg-gray-800 hover:bg-gray-900 border border-gray-800 rounded-md py-2 text-sm font-semibold text-white text-center transition duration-150">
             Start Free Trial
           </a>
@@ -240,37 +262,109 @@
         <div class="pt-6 pb-8 px-6">
           <h4 class="text-xs font-medium text-gray-900 tracking-wide uppercase">Everything in Pro, plus</h4>
           <ul class="mt-6 space-y-4">
-            <li class="flex space-x-3"><i class="fas fa-users h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Up to 200 clients</span></li>
-            <li class="flex space-x-3"><i class="fas fa-user-tie h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Multi-trainer management</span></li>
-            <li class="flex space-x-3"><i class="fas fa-headset h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">Priority support</span></li>
-            <li class="flex space-x-3"><i class="fas fa-key h-6 w-6 text-secondary-500"></i><span class="text-sm text-gray-500">API access</span></li>
+            <li class="flex space-x-3"><i class="fas fa-users text-secondary-500"></i><span class="text-sm text-gray-500">Up to 200 clients</span></li>
+            <li class="flex space-x-3"><i class="fas fa-user-tie text-secondary-500"></i><span class="text-sm text-gray-500">Multi-trainer management</span></li>
+            <li class="flex space-x-3"><i class="fas fa-headset text-secondary-500"></i><span class="text-sm text-gray-500">Priority support</span></li>
+            <li class="flex space-x-3"><i class="fas fa-key text-secondary-500"></i><span class="text-sm text-gray-500">API access</span></li>
           </ul>
         </div>
       </div>
 
     </div>
+
+    <p class="mt-6 text-center text-xs text-gray-500">
+      Prices shown in ETB, USD, and EUR. Yearly plans include a 20% discount. Taxes may apply depending on your country.
+    </p>
   </div>
 </div>
 
 <script>
-  // Toggle Monthly/Yearly Pricing
   const toggle = document.getElementById('pricing-toggle');
+  const knob = document.getElementById('pricing-toggle-knob');
+  const currencyButtons = document.querySelectorAll('.currency-btn');
+
   let yearly = false;
+  let currentCurrency = "USD"; // default
 
-  toggle.addEventListener('click', () => {
+  const prices = {
+    monthly: {
+      USD: { basic: 35, pro: 50, enterprise: 120 },
+      ETB: { basic: 2000, pro: 3000, enterprise: 7000 },
+      EUR: { basic: 32, pro: 46, enterprise: 110 }
+    },
+    yearly: {
+      USD: { basic: 35 * 12 * 0.8, pro: 50 * 12 * 0.8, enterprise: 120 * 12 * 0.8 },
+      ETB: { basic: 2000 * 12 * 0.8, pro: 3000 * 12 * 0.8, enterprise: 7000 * 12 * 0.8 },
+      EUR: { basic: 32 * 12 * 0.8, pro: 46 * 12 * 0.8, enterprise: 110 * 12 * 0.8 }
+    }
+  };
+
+  const discounts = {
+    USD: { basic: { "3m": 100, "6m": 190 }, pro: { "3m": 143, "6m": 270 }, enterprise: { "3m": 342, "6m": 648 } },
+    ETB: { basic: { "3m": 5700, "6m": 10800 }, pro: { "3m": 8550, "6m": 16200 }, enterprise: { "3m": 19950, "6m": 37800 } },
+    EUR: { basic: { "3m": 91, "6m": 173 }, pro: { "3m": 131, "6m": 249 }, enterprise: { "3m": 314, "6m": 594 } }
+  };
+
+  function formatPrice(val, currency) {
+    if (currency === "USD") return `$${val}`;
+    if (currency === "ETB") return `ETB ${val.toLocaleString()}`;
+    if (currency === "EUR") return `€${val}`;
+    return val;
+  }
+
+  function setPricing() {
+    const plan = yearly ? "yearly" : "monthly";
+
+    // Main prices
+    document.getElementById("basic-price").textContent = formatPrice(prices[plan][currentCurrency].basic, currentCurrency);
+    document.getElementById("pro-price").textContent = formatPrice(prices[plan][currentCurrency].pro, currentCurrency);
+    document.getElementById("enterprise-price").textContent = formatPrice(prices[plan][currentCurrency].enterprise, currentCurrency);
+
+    // Durations
+    const duration = yearly ? "/year" : "/month";
+    document.getElementById("basic-duration").textContent = duration;
+    document.getElementById("pro-duration").textContent = duration;
+    document.getElementById("enterprise-duration").textContent = duration;
+
+    // Discounts (only for monthly cycle)
+    document.getElementById("basic-discounts").innerHTML = !yearly ? `
+      <p>3 months: ${formatPrice(discounts[currentCurrency].basic["3m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 5%)</span></p>
+      <p>6 months: ${formatPrice(discounts[currentCurrency].basic["6m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 10%)</span></p>
+    ` : "";
+
+    document.getElementById("pro-discounts").innerHTML = !yearly ? `
+      <p>3 months: ${formatPrice(discounts[currentCurrency].pro["3m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 5%)</span></p>
+      <p>6 months: ${formatPrice(discounts[currentCurrency].pro["6m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 10%)</span></p>
+    ` : "";
+
+    document.getElementById("enterprise-discounts").innerHTML = !yearly ? `
+      <p>3 months: ${formatPrice(discounts[currentCurrency].enterprise["3m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 5%)</span></p>
+      <p>6 months: ${formatPrice(discounts[currentCurrency].enterprise["6m"], currentCurrency)} <span class="text-green-600 font-semibold">(save 10%)</span></p>
+    ` : "";
+  }
+
+  // Toggle Monthly/Yearly
+  toggle.addEventListener("click", () => {
     yearly = !yearly;
-
-    document.getElementById('basic-price').textContent = yearly ? 'ETB. 19,200' : 'ETB. 2,000';
-    document.getElementById('basic-duration').textContent = yearly ? '/year' : '/month';
-
-    document.getElementById('pro-price').textContent = yearly ? 'ETB. 28,800' : 'ETB. 3,000';
-    document.getElementById('pro-duration').textContent = yearly ? '/year' : '/month';
-
-    document.getElementById('enterprise-price').textContent = yearly ? 'ETB. 67,200' : 'ETB. 7,000';
-    document.getElementById('enterprise-duration').textContent = yearly ? '/year' : '/month';
+    knob.classList.toggle("translate-x-6");
+    setPricing();
   });
-</script>
 
+  // Toggle Currency
+  currencyButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currencyButtons.forEach(b => b.classList.remove("bg-gray-200"));
+      currencyButtons.forEach(b => b.classList.add("bg-gray-100"));
+      btn.classList.remove("bg-gray-100");
+      btn.classList.add("bg-gray-200");
+      currentCurrency = btn.dataset.currency;
+      setPricing();
+    });
+  });
+
+  // Init
+  setPricing();
+</script>
 
 
 
@@ -283,7 +377,7 @@
       <span class="block">fitness business?</span>
     </h2>
     <p class="mt-6 text-lg text-primary-100 sm:text-xl sm:leading-8 max-w-2xl mx-auto">
-      Join hundreds of Ethiopian fitness trainers already growing their business and helping clients achieve their fitness goals.
+      Join hundreds of Worldwide fitness trainers already growing their business and helping clients achieve their fitness goals.
     </p>
     <div class="mt-10 flex justify-center">
       <a href="{% url 'accounts:register' %}" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-semibold rounded-lg text-primary bg-white hover:bg-gray-100 shadow-lg transition duration-300 transform hover:-translate-y-1">

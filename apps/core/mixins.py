@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+from django.utils import timezone
+from random import randint, sample
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
@@ -6,6 +9,8 @@ from apps.trainers.models import TrainerProfile
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
+
+from apps.workouts.models import ExerciseProgress, WorkoutPlan
 
 
 class RoleRequiredMixin(UserPassesTestMixin):
@@ -142,6 +147,8 @@ class TailwindFormMixin:
 
             else:
                 widget.attrs.setdefault("class", self.default_input_class)
+
+
 
 
 
