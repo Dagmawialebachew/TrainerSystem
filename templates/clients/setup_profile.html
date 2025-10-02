@@ -80,8 +80,8 @@
                     {% if form.trainer.value|stringformat:"s" == trainer.id|stringformat:"s" %}checked{% endif %}>
                   <div class="p-4 flex items-start gap-3">
                     <div class="flex-shrink-0">
-                      {% if trainer.user.profile_picture %}
-                        <img src="{{ trainer.user.profile_picture.url }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                      {% if trainer.user.trainer_profile.logo %}
+                        <img src="{{ trainer.user.trainer_profile.logo.url }}" alt="" class="h-12 w-12 rounded-full object-cover">
                       {% else %}
                         <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold">
                           {{ trainer.user.first_name.0 }}{{ trainer.user.last_name.0 }}
@@ -92,7 +92,7 @@
                       <div class="flex items-center justify-between">
                         <div>
                           <div class="text-sm font-semibold text-gray-900">{{ trainer.user.get_full_name }}</div>
-                          <div class="text-xs text-gray-500">{{ trainer.certifications|default_if_none:"—"|join:", " }}</div>
+                          <div class="text-xs text-gray-500">{{ trainer.certifications|default_if_none:"—"}}</div>
                         </div>
                         <div class="text-xs text-gray-400">{{ trainer.experience_years }} yrs</div>
                       </div>

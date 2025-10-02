@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from fitness_saas.utils import notify_bot
 from django.contrib.auth import login
 from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -32,6 +33,7 @@ class RegisterView(CreateView):
         user.save()
         login(self.request, user)
         messages.success(self.request, 'Account created successfully!')
+        notify_bot(f"🆕 New user registered: {user.username} (role: {user.role})")
         # Redirect based on role
         if user.role == 'trainer':
             return redirect('trainers:setup_profile')
@@ -65,6 +67,7 @@ class CustomLoginView(LoginView):
         user = form.get_user()
         login(self.request, user)
         messages.success(self.request, f"Welcome back, {user.username} 🎉")
+        notify_bot(f"✅ User logged in: {user.username} (role: {user.role})")
         return redirect(self.get_success_url())
 
     def form_invalid(self, form):

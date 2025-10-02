@@ -198,3 +198,7 @@ PACKAGE_LIMITS = {
         'custom_branding': True,
     }
 }
+
+
+TELEGRAM_BOT_TOKEN = '8141768447:AAE-sk9IROgjZWmaJEI5iU4R9rL1QyzrV7k'
+TELEGRAM_CHAT_ID = '1131741322'
